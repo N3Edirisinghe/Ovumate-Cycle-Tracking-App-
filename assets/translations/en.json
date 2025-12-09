@@ -1,0 +1,1217 @@
+{
+  "app": {
+    "title": "OvuMate",
+    "language": "Language"
+  },
+  "ovulation": {
+    "calculator": "Ovulation & Fertility Calculator",
+    "last_period": "Last Period Start Date",
+    "cycle_length": "Cycle Length (days)",
+    "calculate": "Calculate Ovulation & Fertility",
+    "fertile_window": "Fertile Window",
+    "ovulation_date": "Ovulation Date",
+    "next_period": "Next Period",
+    "fertility_calendar": "Your Fertility Calendar",
+    "based_on_cycle": "${cycle}-day cycle",
+    "fertile_period": "Fertile Period",
+    "best_conceive": "Best time to conceive",
+    "safe_period": "Safe Period",
+    "low_pregnancy": "Lower chance of pregnancy",
+    "how_calculated": "How are these calculated?",
+    "calculation_info": "Ovulation is typically 14 days before your next period. The fertile window is 5 days before and 1 day after ovulation. These are estimates and can vary. For medical advice, consult your healthcare provider.",
+    "error": {
+      "select_date": "Please select your last period start date",
+      "invalid_cycle": "Cycle length should be between 21-35 days",
+      "invalid_input": "Please enter a valid cycle length"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "next": "Next",
+    "back": "Back",
+    "done": "Done",
+    "continue": "Continue",
+    "tap_to_select_date": "Tap to select date",
+    "close": "Close"
+  },
+  "settings": {
+    "title": "Settings",
+    "tap_to_add_name": "Tap to add name",
+    "edit_name": "Edit Name",
+    "account_settings": "Account Settings",
+    "security": "Security",
+    "security_subtitle": "Manage security settings",
+    "notifications": "Notifications",
+    "notifications_subtitle": "Manage notification preferences",
+    "language": "Language",
+    "language_subtitle": "Change app language",
+    "app_preferences": "App Preferences",
+    "dark_mode": "Dark Mode",
+    "dark_mode_subtitle": "Toggle dark mode",
+    "help_and_support": "Help & Support",
+    "help_and_support_subtitle": "Get help and support",
+    "feedback": "Feedback",
+    "feedback_subtitle": "Send us your feedback",
+    "rate_app": "Rate App",
+    "rate_app_subtitle": "Rate us on the store",
+    "sign_out": "Sign Out",
+    "security_settings": {
+      "title": "Security Settings",
+      "enable_pin": "Enable PIN Lock",
+      "enable_pin_subtitle": "Protect your data with a PIN",
+      "change_pin": "Change PIN",
+      "setup_pin": "Setup PIN",
+      "create_pin": "Create a 4-digit PIN to protect your data",
+      "enter_pin": "Enter 4-digit PIN",
+      "enter_current_pin": "Enter current PIN",
+      "enter_new_pin": "Enter new PIN",
+      "confirm_new_pin": "Confirm new PIN",
+      "pin_must_be_4": "PIN must be 4 digits",
+      "pin_setup_success": "PIN setup successful!",
+      "invalid_current_pin": "Invalid current PIN",
+      "pins_not_match": "PINs do not match",
+      "pin_changed_success": "PIN changed successfully!"
+    },
+    "help": {
+      "title": "Help & Support",
+      "user_guide": "User Guide",
+      "faqs": "FAQs",
+      "contact_support": "Contact Support",
+      "report_bug": "Report a Bug"
+    },
+    "user_guide": {
+      "title": "User Guide",
+      "cycle_tracking": "Cycle Tracking",
+      "cycle_tracking_desc": "Monitor your menstrual cycles, symptoms, and patterns. Tap any date on the calendar to add entries.",
+      "ovulation_calculator": "Ovulation Calculator",
+      "ovulation_calculator_desc": "Calculate your fertile window and ovulation dates based on your cycle history.",
+      "health_ai": "Health AI Assistant",
+      "health_ai_desc": "Get personalized health advice and answers to your questions about reproductive health.",
+      "sleep_water": "Sleep & Water Tracking",
+      "sleep_water_desc": "Track your daily sleep hours, water intake, and stress levels to maintain overall wellness."
+    },
+    "faqs": {
+      "title": "FAQs",
+      "q1": "How accurate is the ovulation calculator?",
+      "a1": "The calculator provides estimates based on typical cycle patterns. Individual variations may occur. For medical advice, consult your healthcare provider.",
+      "q2": "Is my data secure?",
+      "a2": "Yes! Your data is encrypted and stored securely on your device. We never share your personal information.",
+      "q3": "Can I export my data?",
+      "a3": "Yes, you can export your cycle data from the settings menu for backup or sharing with your healthcare provider.",
+      "q4": "How do I change the language?",
+      "a4": "Go to Settings > Language and select your preferred language (English, Sinhala, or Tamil)."
+    },
+    "contact": {
+      "title": "Contact Support",
+      "email": "Email",
+      "email_value": "support@ovumate.com",
+      "phone": "Phone",
+      "phone_value": "+1 (555) 123-4567",
+      "hours": "Support Hours",
+      "hours_value": "Mon-Fri: 9 AM - 6 PM EST"
+    },
+    "bug_report": {
+      "title": "Report a Bug",
+      "description": "Describe the issue you're experiencing",
+      "placeholder": "Please provide details about the bug...",
+      "submit": "Submit Report",
+      "success": "Thank you! Your bug report has been submitted.",
+      "error": "Please describe the issue"
+    },
+    "feedback_dialog": {
+      "title": "Send Feedback",
+      "description": "We'd love to hear your thoughts!",
+      "placeholder": "Share your feedback here...",
+      "submit": "Send Feedback",
+      "success": "Thank you for your feedback!",
+      "error": "Please enter your feedback"
+    },
+    "rate": {
+      "title": "Rate Ovumate",
+      "message": "Enjoying Ovumate? Please take a moment to rate us!",
+      "feedback_help": "Your feedback helps us improve!",
+      "rate_now": "Rate Now",
+      "maybe_later": "Maybe Later",
+      "thank_you": "Thank you for your support!",
+      "error": "Could not open app store"
+    },
+    "sign_out_dialog": {
+      "title": "Sign Out",
+      "message": "Are you sure you want to sign out? Your data will be saved.",
+      "success": "Signed out successfully"
+    },
+    "messages": {
+      "failed_pick_image": "Failed to pick image"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "forgot_password": "Forgot Password?",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "sign_up": "Sign Up",
+    "sign_in": "Sign In",
+    "name": "Full Name",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "welcome": "Welcome to OvuMate",
+    "welcome_back": "Welcome Back",
+    "create_account": "Create Account",
+    "start_journey": "Start your wellness journey today",
+    "terms": "By signing up, you agree to our Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "error": {
+      "invalid_email": "Please enter a valid email address",
+      "invalid_password": "Password must be at least 8 characters",
+      "passwords_dont_match": "Passwords do not match",
+      "required_field": "This field is required"
+    }
+  },
+    "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "get_started": "Get Started",
+    "slides": [
+      {
+        "title": "Track Your Cycle",
+        "description": "Easily track your menstrual cycle and predict your fertile days"
+      },
+      {
+        "title": "Monitor Your Health",
+        "description": "Keep track of your mood, sleep, and other health indicators"
+      },
+      {
+        "title": "Get Personalized Insights",
+        "description": "Receive AI-powered insights about your reproductive health"
+      }
+    ]
+  },
+    "lifestyle": {
+      "title": "Lifestyle Tracking",
+      "next_period": {
+        "title": "Next Period Date",
+        "days_away": "{days} days away",
+        "not_available": "Not available yet",
+        "track_more": "Track a few cycles to get predictions"
+      },
+      "date": {
+        "title": "Date",
+        "select": "Select Date"
+      },
+      "sleep": {
+        "title": "Sleep (hours)",
+        "hours": "{hours} h"
+      },
+      "water": {
+        "title": "Water Intake (ml)",
+        "ml": "{amount} ml"
+      },
+      "stress": {
+        "title": "Stress Level (1-10)",
+        "level": "{level}"
+      },
+      "mood": {
+        "title": "Mood",
+        "options": {
+          "happy": "Happy",
+          "calm": "Calm",
+          "energetic": "Energetic",
+          "irritable": "Irritable",
+          "anxious": "Anxious",
+          "sad": "Sad",
+          "stressed": "Stressed",
+          "focused": "Focused",
+          "tired": "Tired",
+          "excited": "Excited"
+        }
+      },
+      "activities": {
+        "title": "Activities",
+        "options": {
+          "exercise": "Exercise",
+          "yoga": "Yoga",
+          "meditation": "Meditation",
+          "reading": "Reading",
+          "socializing": "Socializing",
+          "work": "Work",
+          "rest": "Rest",
+          "shopping": "Shopping",
+          "cooking": "Cooking",
+          "cleaning": "Cleaning"
+        }
+      },
+      "medication": {
+        "title": "Took medication",
+        "notes": {
+          "label": "Medication notes",
+          "hint": "What medication did you take?"
+        }
+      },
+      "buttons": {
+        "save": "Save",
+        "share": "Share"
+      },
+      "messages": {
+        "save_success": "Lifestyle data saved successfully!",
+        "share_error": "Could not open WhatsApp. Please make sure WhatsApp is installed.",
+        "share_success": "Opening WhatsApp to share your lifestyle data..."
+      }
+    },
+    "mood_stress": {
+      "title": "Mood & Stress",
+      "subtitle": "Track your emotional wellness",
+      "mood": {
+        "overview": {
+          "title": "Mood Overview",
+          "subtitle": "Your emotional patterns",
+          "most_common": "Most Common",
+          "recent": "Recent",
+          "distribution": "Mood Distribution (Last 7 days)",
+          "no_data": {
+            "title": "No mood data yet",
+            "subtitle": "Start tracking your mood to see insights"
+          }
+        },
+        "history": {
+          "title": "Recent Mood History"
+        },
+        "insights": {
+          "title": "Mood Insights",
+          "most_common": "Your most common mood is \"{mood}\" ({percentage}% of the time)",
+          "variety": "You experience {count} different mood states, showing emotional variety",
+          "positive": "Positive moods are well represented in your tracking",
+          "stress": "Stress-related moods appear, consider stress management techniques"
+        },
+        "types": {
+          "happy": "Happy",
+          "joyful": "Joyful",
+          "excited": "Excited",
+          "calm": "Calm",
+          "peaceful": "Peaceful",
+          "relaxed": "Relaxed",
+          "sad": "Sad",
+          "down": "Down",
+          "depressed": "Depressed",
+          "anxious": "Anxious",
+          "worried": "Worried",
+          "stressed": "Stressed"
+        }
+      },
+      "stress": {
+        "analysis": {
+          "title": "Stress Analysis",
+          "subtitle": "Understanding your stress patterns",
+          "average": "Average",
+          "trend": "Trend",
+          "no_data": {
+            "title": "No stress data yet",
+            "subtitle": "Track your stress levels to get insights"
+          }
+        },
+        "trends": {
+          "improving": "Improving",
+          "increasing": "Increasing",
+          "stable": "Stable"
+        },
+        "recommendations": {
+          "low": "Great stress management! Keep up the good work.",
+          "medium": "Moderate stress levels. Consider stress-reduction techniques.",
+          "high": "High stress detected. Prioritize self-care and relaxation."
+        },
+        "tips": {
+          "title": "Stress Management Tips",
+          "list": [
+            "Practice deep breathing exercises for 5-10 minutes daily",
+            "Engage in regular physical activity to reduce stress hormones",
+            "Maintain a consistent sleep schedule for better stress resilience",
+            "Try mindfulness meditation to stay present and reduce anxiety",
+            "Limit caffeine and alcohol intake, especially in the evening",
+            "Set realistic goals and break tasks into manageable steps",
+            "Connect with friends and family for emotional support",
+            "Consider journaling to process thoughts and feelings"
+          ]
+        }
+      }
+    },
+    "cycle_tracking": {
+    "title": "Cycle Tracking",
+    "description": "Track your cycle, symptoms, and lifestyle patterns",
+    "current_status": "Current Cycle Status",
+    "upcoming_events": {
+      "title": "Upcoming Events",
+      "next_ovulation": "Next Ovulation",
+      "fertile_window": "Fertile Window",
+      "no_events": "No upcoming events"
+    },
+    "quick_actions": {
+      "title": "Quick Actions",
+      "log_period": "Log Period",
+      "log_symptoms": "Log Symptoms",
+      "lifestyle": "Lifestyle"
+    },
+    "quick_share": {
+      "title": "Quick Share with Contacts",
+      "subtitle": "Share cycle info with friends & family",
+      "cycle_summary": "Cycle Summary",
+      "ovulation": "Ovulation",
+      "share_status": "Share Status",
+      "share_next_period": "Share Next Period",
+      "share_ovulation": "Share Ovulation",
+      "share_summary": "Share Summary",
+      "recent_contacts": "Recent Contacts",
+      "tap_to_select": "Tap any share button above to select contacts"
+    },
+    "fertility_window": {
+      "title": "Fertility Window",
+      "fertile_start": "Fertile Start",
+      "fertile_end": "Fertile End",
+      "high_chance": "High chance",
+      "last_chance": "Last chance",
+      "days": "days",
+      "today": "Today",
+      "not_enough_data": "Not enough data to predict fertility window"
+    },
+    "symptom_trends": {
+      "title": "Symptom Trends"
+    },
+    "health_score": {
+      "title": "Cycle Health Score",
+      "out_of": "out of 100",
+      "excellent": "Excellent!",
+      "very_good": "Very Good",
+      "good": "Good",
+      "fair": "Fair",
+      "needs_improvement": "Needs Improvement",
+      "poor": "Poor - Consult Doctor"
+    },
+    "medication": {
+      "title": "Medication & Supplements",
+      "no_medications": "No medications tracked"
+    },
+    "wellness_tips": {
+      "title": "Wellness Tips & Recommendations",
+      "menstrual": {
+        "tip1": "Rest and take it easy during your period",
+        "tip2": "Stay hydrated and eat iron-rich foods",
+        "tip3": "Use heating pads for cramps",
+        "tip4": "Practice gentle yoga or stretching"
+      },
+      "follicular": {
+        "tip1": "Great time for high-intensity workouts",
+        "tip2": "Focus on protein-rich nutrition",
+        "tip3": "Plan new projects and goals",
+        "tip4": "Socialize and be creative"
+      },
+      "ovulation": {
+        "tip1": "Peak energy - perfect for challenging workouts",
+        "tip2": "Focus on strength training",
+        "tip3": "Eat balanced meals with healthy fats",
+        "tip4": "Great time for important decisions"
+      },
+      "luteal": {
+        "tip1": "Moderate exercise intensity",
+        "tip2": "Focus on stress management",
+        "tip3": "Eat complex carbohydrates",
+        "tip4": "Practice self-care and relaxation"
+      }
+    },
+    "flow_intensity": {
+      "light": "Light",
+      "light_to_medium": "Light to Medium",
+      "medium": "Medium",
+      "medium_to_heavy": "Medium to Heavy",
+      "heavy": "Heavy",
+      "not_specified": "Not specified"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "predicted": "Predicted"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "calendar": "Calendar",
+      "statistics": "Statistics",
+      "lifestyle": "Lifestyle"
+    },
+    "today": "Today",
+    "period": "Period",
+    "fertile": "Fertile",
+    "ovulation": "Ovulation",
+    "next_period": "Next Period",
+    "days_until": "{days} days until {event}",
+    "days_until_label": "days until",
+    "next_period_label": "next period",
+    "day_of_cycle": "Day {day} of cycle",
+    "add_entry": "Add Entry",
+    "view_insights": "View Insights",
+    "entry": {
+      "title": "Add Entry",
+      "save": "Save",
+      "save_entry": "Save Entry",
+      "date": "Date",
+      "period_tracking": "Period Tracking",
+      "is_period_day": "Is this a period day?",
+      "flow_intensity": "Flow intensity:",
+      "light": "Light",
+      "heavy": "Heavy",
+      "cycle_phase": "Cycle Phase",
+      "symptoms": "Symptoms",
+      "symptom_severity": "Symptom Severity:",
+      "lifestyle_tracking": "Lifestyle Tracking",
+      "sleep_hours": "Sleep (hours)",
+      "sleep_hint": "e.g., 7.5 or 8",
+      "water_intake": "Water intake (ml)",
+      "water_hint": "e.g., 2000",
+      "stress_level": "Stress level (1-10):",
+      "mood": "Mood:",
+      "activities": "Activities:",
+      "took_medication": "Took medication",
+      "medication_notes": "Medication notes",
+      "medication_hint": "What medication did you take?",
+      "additional_notes": "Additional Notes",
+      "notes": "Notes",
+      "notes_hint": "Any additional observations or notes...",
+      "saved_successfully": "Entry saved successfully",
+      "save_failed": "Failed to save entry",
+      "error": "Error: {error}",
+      "phases": {
+        "menstrual": "Menstrual",
+        "follicular": "Follicular",
+        "ovulation": "Ovulation",
+        "luteal": "Luteal",
+        "unknown": "Unknown"
+      },
+      "severity": {
+        "none": "None",
+        "mild": "Mild",
+        "moderate": "Moderate",
+        "severe": "Severe"
+      }
+    },
+    "calendar": {
+      "period_days": "Period Days",
+      "period_day": "Period Day",
+      "period": "Period",
+      "fertile_window": "Fertile Window",
+      "ovulation_day": "Ovulation Day",
+      "ovulation": "Ovulation",
+      "predicted": "Predicted",
+      "actual": "Actual",
+      "has_entries": "Has Entries",
+      "symptom_days": "Symptom Days",
+      "monthly_overview": "Monthly Overview",
+      "recent_entries": "Recent Entries (Last 7 Days)",
+      "luteal_phase": "Luteal Phase",
+      "today": "Today",
+      "legend": "Calendar Legend",
+      "total_entries": "Total Entries"
+    },
+    "statistics": {
+      "title": "Cycle Statistics",
+      "regularity_score": "Regularity Score",
+      "regularity_description": "How consistent your cycles are",
+      "average_cycle": "Average Cycle",
+      "average_cycle_description": "Your typical cycle length",
+      "variation": "Variation",
+      "variation_description": "Cycle length variation",
+      "shortest": "Shortest",
+      "shortest_description": "Shortest cycle recorded",
+      "longest": "Longest",
+      "longest_description": "Longest cycle recorded",
+      "days": "days"
+    },
+    "lifestyle_summary": {
+      "title": "Lifestyle Summary",
+      "avg_stress": "Avg Stress",
+      "recent_entries": "Recent Lifestyle Entries",
+      "sleep": "Sleep",
+      "water": "Water",
+      "stress": "Stress",
+      "no_entries": "No lifestyle entries yet"
+    },
+    "activities": {
+      "meditation": "Meditation",
+      "yoga": "Yoga",
+      "exercise": "Exercise",
+      "walking": "Walking",
+      "running": "Running",
+      "swimming": "Swimming",
+      "cycling": "Cycling",
+      "work": "Work",
+      "reading": "Reading",
+      "socializing": "Socializing",
+      "rest": "Rest",
+      "shopping": "Shopping",
+      "cooking": "Cooking",
+      "cleaning": "Cleaning"
+    },
+    "moods": {
+      "excited": "Excited",
+      "happy": "Happy",
+      "sad": "Sad",
+      "anxious": "Anxious",
+      "calm": "Calm",
+      "stressed": "Stressed",
+      "energetic": "Energetic",
+      "irritable": "Irritable",
+      "focused": "Focused",
+      "tired": "Tired",
+      "recent_moods": "Recent Moods"
+    },
+    "wellness_insights": {
+      "title": "Wellness Insights",
+      "most_common_mood": "Most Common Mood",
+      "most_common_activity": "Most Common Activity",
+      "add_more_entries": "Add more entries to see insights"
+    },
+    "units": {
+      "hours": "h",
+      "ml": "ml",
+      "days": "days"
+    },
+    "mood_stress": {
+      "title": "Mood & Stress Tracker",
+      "average_mood": "Average Mood",
+      "stress_level": "Stress Level",
+      "recent_moods": "Recent Moods"
+    },
+    "symptoms": {
+      "title": "Symptoms",
+      "recent": "Recent Symptoms",
+      "flow": "Flow",
+      "pain": "Pain",
+      "mood": "Mood",
+      "energy": "Energy",
+      "sleep": "Sleep",
+      "add_symptom": "Add Symptom"
+    },
+    "symptoms_options": {
+      "cramps": "Cramps",
+      "bloating": "Bloating",
+      "tender_breasts": "Tender breasts",
+      "acne": "Acne",
+      "food_cravings": "Food cravings",
+      "headache": "Headache",
+      "back_pain": "Back pain",
+      "nausea": "Nausea",
+      "dizziness": "Dizziness",
+      "hot_flashes": "Hot flashes",
+      "insomnia": "Insomnia",
+      "anxiety": "Anxiety",
+      "depression": "Depression"
+    },
+    "insights": {
+      "title": "Cycle Insights",
+      "overview": {
+        "title": "Cycle Overview",
+        "regularity": "Regularity",
+        "avg_cycle": "Avg Cycle",
+        "avg_period": "Avg Period",
+        "cycles_tracked": "Cycles tracked",
+        "days": "days"
+      },
+      "need_more_data": "Track more cycles for accurate insights",
+      "trends": {
+        "title": "Cycle Trends",
+        "shortest": "Shortest Cycle",
+        "longest": "Longest Cycle",
+        "variation": "Variation",
+        "consistency": "Consistency",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low",
+        "no_data": "Track more cycles to see trends"
+      },
+      "symptoms": {
+        "title": "Symptom Analysis",
+        "no_data": "Track symptoms to see analysis",
+        "frequency": "Occurs {value}% of the time",
+        "severity": {
+          "mild": "Mild",
+          "moderate": "Moderate",
+          "severe": "Severe"
+        }
+      },
+      "lifestyle": {
+        "title": "Lifestyle Insights",
+        "avg_sleep": "Avg Sleep",
+        "avg_water": "Avg Water",
+        "avg_stress": "Avg Stress",
+        "common_mood": "Common Mood",
+        "hours": "hrs",
+        "ml": "ml"
+      },
+      "predictions": {
+        "title": "Predictions",
+        "next_period": "Next Period",
+        "next_ovulation": "Next Ovulation",
+        "current_phase": "Current Phase",
+        "today": "Today",
+        "days_ago": "{days} days ago",
+        "in_days": "In {days} days"
+      }
+    },
+    "alerts": {
+      "title": "Cycle Irregularity Alerts",
+      "irregularity": "Cycle irregularity detected",
+      "abnormal_length": "Cycle length outside normal range",
+      "no_data": "No cycle data available",
+      "all_regular": "All cycles appear regular"
+    },
+    "flow": {
+      "title": "Period Flow Intensity",
+      "light": "Light",
+      "medium": "Medium",
+      "heavy": "Heavy",
+      "spotting": "Spotting",
+      "no_data": "No period flow data tracked yet"
+    },
+    "pain": {
+      "none": "None",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "severe": "Severe"
+    },
+    "mood": {
+      "happy": "Happy",
+      "sad": "Sad",
+      "sensitive": "Sensitive",
+      "irritable": "Irritable",
+      "anxious": "Anxious",
+      "calm": "Calm"
+    },
+    "sleep_water": {
+      "title": "Sleep & Water",
+      "avg_sleep": "Avg Sleep",
+      "avg_water": "Avg Water",
+      "sleep_quality_chart": {
+        "title": "Sleep Quality Chart",
+        "subtitle": "Sleep patterns over the last 7 days",
+        "no_data": "No sleep data yet - Tap to add"
+      },
+      "water_intake_chart": {
+        "title": "Water Intake Trends",
+        "subtitle": "Daily hydration levels and trends",
+        "no_data": "No water data yet - Tap to add"
+      },
+      "sleep_quality": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor"
+      },
+      "water_intake": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "low": "Low"
+      }
+    }
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "days": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "navigation": {
+    "cycle": "Cycle",
+    "ovulation": "Ovulation",
+    "ai": "AI",
+    "articles": "Articles",
+    "settings": "Settings"
+  },
+  "sleep_water": {
+    "title": "Sleep & Water Tracking",
+    "subtitle": "Monitor your sleep and hydration",
+    "sleep_overview": {
+      "title": "Sleep Overview",
+      "subtitle": "Your recent sleep patterns",
+      "average_sleep": "Average Sleep",
+      "sleep_quality": "Sleep Quality",
+      "trend": "Trend",
+      "chart_title": "Sleep Quality Chart",
+      "chart_subtitle": "Sleep patterns over the last 7 days"
+    },
+    "water_overview": {
+      "title": "Water Intake Overview",
+      "subtitle": "Your recent hydration levels",
+      "average_intake": "Average Intake",
+      "hydration_level": "Hydration Level",
+      "trend": "Trend",
+      "chart_title": "Water Intake Trends",
+      "chart_subtitle": "Daily hydration levels and trends"
+    },
+    "quality_levels": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor",
+      "low": "Low"
+    },
+    "trends": {
+      "improving": "Improving",
+      "stable": "Stable",
+      "declining": "Declining"
+    },
+    "sleep_recommendations": {
+      "excellent": "Excellent sleep! Keep up the great habits.",
+      "good": "Good sleep patterns. Aim for 8 hours.",
+      "fair": "Fair sleep. Try to get more rest.",
+      "poor": "Need more sleep. Prioritize rest."
+    },
+    "water_recommendations": {
+      "excellent": "Excellent hydration! Keep it up.",
+      "good": "Good hydration. Aim for 2.5L daily.",
+      "moderate": "Moderate hydration. Drink more water.",
+      "low": "Low hydration. Increase water intake."
+    },
+    "no_sleep_data": "No Sleep Data Yet",
+    "no_sleep_data_subtitle": "Start tracking your sleep to see insights",
+    "no_water_data": "No Water Data Yet",
+    "no_water_data_subtitle": "Start tracking your water intake to see insights",
+    "no_chart_data_sleep": "No sleep data yet - Add entries to see chart",
+    "no_chart_data_water": "No water data yet - Add entries to see chart",
+    "dialog_sleep_subtitle": "Last 7 days of sleep data",
+    "dialog_water_subtitle": "Last 7 days of hydration data",
+    "lifestyle_recommendations": "Lifestyle Recommendations",
+    "lifestyle_great": "Great job! Keep up your healthy habits.",
+    "lifestyle_sleep_tip": "Try to get at least 7-8 hours of sleep per night.",
+    "lifestyle_water_tip": "Aim to drink at least 2 liters of water daily.",
+    "sleep_tips_title": "Sleep Tips",
+    "sleep_tips": {
+      "tip1": "Maintain a consistent sleep schedule",
+      "tip2": "Create a relaxing bedtime routine",
+      "tip3": "Keep your bedroom cool and dark",
+      "tip4": "Avoid caffeine in the evening",
+      "tip5": "Limit screen time before bed",
+      "tip6": "Exercise regularly during the day",
+      "tip7": "Avoid large meals before bedtime",
+      "tip8": "Use your bed only for sleep",
+      "tip9": "Manage stress with relaxation techniques",
+      "tip10": "Avoid napping late in the day"
+    }
+  },
+      "notifications": {
+      "title": "Notifications",
+      "clear_all": "Clear All",
+      "count": {
+        "single": "{count} notification pending",
+        "multiple": "{count} notifications pending"
+      },
+      "empty": {
+        "title": "No Notifications",
+        "subtitle": "You're all caught up!"
+      },
+      "actions": {
+        "view": "View",
+        "dismiss": "Dismiss"
+      },
+      "types": {
+        "period": "PERIOD",
+        "ovulation": "OVULATION",
+        "wellness": "WELLNESS",
+        "general": "GENERAL"
+      },
+      "time": {
+        "scheduled": "Scheduled"
+      },
+      "messages": {
+        "dismissed": "Notification dismissed",
+        "all_cleared": "All notifications cleared"
+      },
+      "clear_dialog": {
+        "title": "Clear All Notifications",
+        "message": "Are you sure you want to clear all notifications? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Clear All"
+      },
+      "schedule": {
+        "title": "Schedule Notifications",
+        "description": "Schedule reminders for your next period and safe period based on your cycle data",
+        "next_period": "Next Period Reminder",
+        "safe_period": "Safe Period Reminder",
+        "cancel": "Cancel",
+        "confirm": "Schedule",
+        "success": "Notifications scheduled successfully!",
+        "failed": "Failed to schedule notifications"
+      },
+      "period_reminder": {
+        "title": "Next Period Reminder",
+        "body": "Your next period is predicted for {date} based on your recent entries."
+      },
+      "safe_period": {
+        "title": "Safe Period Reminder",
+        "body": "Your predicted safe period begins on {date}. Log your wellness details to keep insights accurate."
+      }
+    },
+    "health_ai": {
+      "title": "AI Health Assistant",
+      "subtitle": "Professional healthcare guidance at your fingertips",
+      "status": {
+        "title": "AI Health Assistant",
+        "subtitle": "Powered by advanced healthcare AI",
+        "online": "Online"
+      },
+      "chat": {
+        "empty": {
+          "title": "Start a conversation",
+          "subtitle": "Ask me anything about your health, cycle, or wellness"
+        },
+        "input": {
+          "placeholder": "Ask me anything about your health, cycle, or wellness..."
+        },
+        "time": {
+          "just_now": "Just now",
+          "minutes_ago": "{minutes}m ago",
+          "hours_ago": "{hours}h ago",
+          "days_ago": "{days}d ago"
+        },
+        "suggestions": {
+          "title": "Quick Questions",
+          "menstrual_cycle": "Learn about menstrual cycle",
+          "ovulation_fertility": "Ovulation and fertility",
+          "period_symptoms": "Manage period symptoms",
+          "health_checkups": "Health checkups",
+          "lifestyle_advice": "Lifestyle advice",
+          "period_pain": "How to manage period pain?",
+          "pregnancy_care": "Pregnancy and prenatal care",
+          "nutrition": "Nutrition for women's health",
+          "mental_health": "Mental health during periods",
+          "exercise": "Exercise during menstruation",
+          "general_checkups": "General health checkups"
+        }
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "account_settings": "Account Settings",
+      "app_preferences": "App Preferences",
+      "security": "Security",
+      "security_subtitle": "Password, biometrics, 2FA",
+      "notifications": "Notifications",
+      "notifications_subtitle": "Manage your notification preferences",
+      "language": "Language",
+      "language_subtitle": "Choose your preferred language",
+      "appearance": "Appearance",
+      "dark_mode": "Dark Mode",
+      "dark_mode_subtitle": "Use dark theme",
+      "support": "Support",
+      "help": "Help & Support",
+      "help_and_support": "Help & Support",
+      "help_and_support_subtitle": "FAQ, tutorials, contact support",
+      "help_subtitle": "FAQ, tutorials, contact support",
+      "feedback": "Send Feedback",
+      "feedback_subtitle": "Report bugs or suggest features",
+      "rate": "Rate App",
+      "rate_app": "Rate App",
+      "rate_app_subtitle": "Rate us on the app store",
+      "rate_subtitle": "Rate us on the app store",
+      "sign_out": "Sign Out",
+      "tap_to_add_name": "Tap to add your name",
+      "support_and_about": "Support & About",
+      "edit_name": {
+        "title": "Edit Name",
+        "label": "Enter your name"
+      },
+      "error": {
+        "image_pick": "Failed to pick image"
+      },
+      "account": {
+        "title": "Account",
+        "security": {
+          "title": "Security",
+          "subtitle": "Password, biometrics, 2FA"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "enable": {
+          "title": "Enable Notifications",
+          "subtitle": "Receive push notifications"
+        },
+        "period": {
+          "title": "Period Reminders",
+          "subtitle": "Get notified before your period"
+        },
+        "ovulation": {
+          "title": "Ovulation Alerts",
+          "subtitle": "Fertile window notifications"
+        },
+        "medication": {
+          "title": "Medication Reminders",
+          "subtitle": "Daily medication alerts"
+        },
+        "wellness": {
+          "title": "Wellness Tips",
+          "subtitle": "Daily health and wellness content"
+        }
+      },
+      "privacy": {
+        "title": "Privacy & Data",
+        "partner_sharing": {
+          "title": "Partner Sharing",
+          "subtitle": "Share cycle data with partner"
+        },
+        "lifestyle": {
+          "title": "Lifestyle Tracking",
+          "subtitle": "Track sleep, water, stress, mood"
+        },
+        "data_export": {
+          "title": "Data Export",
+          "subtitle": "Download your data"
+        },
+        "delete_account": {
+          "title": "Delete Account",
+          "subtitle": "Permanently delete your account",
+          "confirm": {
+            "title": "Delete Account",
+            "message": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.",
+            "cancel": "Cancel",
+            "delete": "Delete"
+          }
+        }
+      },
+      "app": {
+        "title": "App Settings",
+        "dark_mode": {
+          "title": "Dark Mode",
+          "subtitle": "Use dark theme"
+        },
+        "biometric": {
+          "title": "Biometric Authentication",
+          "subtitle": "Use fingerprint or face ID"
+        },
+        "language": {
+          "title": "Language",
+          "subtitle": "English"
+        },
+        "storage": {
+          "title": "Storage",
+          "subtitle": "Manage app data"
+        }
+      },
+      "support": {
+        "title": "Support & Feedback",
+        "help": {
+          "title": "Help & Support",
+          "subtitle": "FAQ, tutorials, contact support"
+        },
+        "feedback": {
+          "title": "Send Feedback",
+          "subtitle": "Report bugs or suggest features"
+        },
+        "rate": {
+          "title": "Rate App",
+          "subtitle": "Rate us on the app store"
+        },
+        "about": {
+          "title": "About",
+          "subtitle": "Version {version}",
+          "dialog": {
+            "title": "About OvuMate",
+            "version": "Version: {version}",
+            "tagline": "Your Personal Cycle Companion",
+            "description": "OvuMate is designed to help women track their menstrual cycles and improve wellness through accurate predictions, educational content, and personalized insights.",
+            "footer": "Made with ❤️ for women's health and wellness",
+            "close": "Close"
+          }
+        }
+      },
+      "sign_out": {
+        "title": "Sign Out",
+        "confirm": {
+          "title": "Sign Out",
+          "message": "Are you sure you want to sign out?",
+          "cancel": "Cancel",
+          "confirm": "Sign Out"
+        }
+      },
+      "messages": {
+        "coming_soon": "{feature} functionality coming soon!",
+        "settings_updated": "{type} settings updated",
+        "features": {
+          "edit_profile": "Edit profile",
+          "security": "Security settings",
+          "data_export": "Data export",
+          "account_deletion": "Account deletion",
+          "language": "Language selection",
+          "storage": "Storage management",
+          "help": "Help and support",
+          "feedback": "Feedback",
+          "rating": "App rating"
+        }
+      },
+      "tap_to_add_name": "Tap to add your name"
+    },
+    "articles": {
+      "title": "Health Articles",
+      "search_hint": "Search health articles...",
+      "all_categories": "All",
+      "all_levels": "All Levels",
+      "no_articles": "No articles available",
+      "check_later": "Check back later for new health articles",
+      "failed_load": "Failed to load articles",
+      "retry": "Retry",
+      "refresh_success": "Articles updated successfully!",
+      "refresh_failed": "Failed to refresh articles",
+      "recommended": "Recommended for You",
+      "all_articles": "All Articles",
+      "read_more": "Read More",
+      "share": "Share",
+      "bookmark": "Bookmark",
+      "bookmarked": "Bookmarked",
+      "like": "Like",
+      "liked": "Liked",
+      "related_articles": "Related Articles",
+      "by_author": "By {author}",
+      "read_time": "{minutes} min read",
+      "views": "{count} views",
+      "categories": {
+        "period_health": "Period Health",
+        "fertility": "Fertility",
+        "pregnancy": "Pregnancy",
+        "nutrition": "Nutrition",
+        "exercise": "Exercise",
+        "mental_health": "Mental Health",
+        "general_health": "General Health"
+      },
+      "difficulty": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "article_detail": {
+        "article_content": "Article Content",
+        "read_full_article": "Read the full article below",
+        "min_read": "{minutes} min read",
+        "like": "Like",
+        "liked": "Liked",
+        "save": "Save",
+        "saved": "Saved",
+        "share_article": "Share Article",
+        "article_image": "Article Image",
+        "related_topics": "Related Topics",
+        "article_actions": "Article Actions",
+        "share": "Share",
+        "views": "Views",
+        "rating": "Rating",
+        "min_read_label": "Min Read",
+        "published": "Published",
+        "related_articles": "Related Articles",
+        "read_time_display": "{time} read",
+        "sharing_coming_soon": "Sharing functionality coming soon!",
+        "rate_article": "Rate this article",
+        "rate_question": "How would you rate this article?",
+        "cancel": "Cancel",
+        "thank_you_rating": "Thank you for rating this article!",
+        "image_load_error": "Could not load image: {error}"
+      },
+      "categories": {
+        "menstrual_health": "Menstrual Health",
+        "fertility": "Fertility",
+        "pregnancy": "Pregnancy",
+        "nutrition": "Nutrition",
+        "exercise": "Exercise",
+        "fitness": "Fitness",
+        "mental_health": "Mental Health",
+        "relationships": "Relationships",
+        "medical_conditions": "Medical Conditions",
+        "lifestyle": "Lifestyle",
+        "medical": "Medical",
+        "general": "General"
+      },
+      "read_time": {
+        "less_than_1": "Less than 1 min",
+        "one_min": "1 min read",
+        "multiple_min": "{minutes} min read"
+      }
+    },
+    "partner_share": {
+      "title": "Partner Connect via WhatsApp",
+      "share_via_whatsapp": "Share via WhatsApp",
+      "share_description": "Generate and share comprehensive cycle reports with your partner",
+      "comprehensive_health_report": "Comprehensive Health Report",
+      "report_description": "Generate a detailed PDF report of your cycle health to share with your partner or healthcare provider.",
+      "quick_summary": "Quick Summary (1-2 pages)",
+      "quick_summary_desc": "Basic cycle overview, recent statistics, and next predictions",
+      "detailed_report": "Detailed Report (5-8 pages)",
+      "detailed_report_desc": "Complete analysis, monthly calendars, lifestyle insights, and recommendations",
+      "healthcare_report": "Healthcare Report (3-4 pages)",
+      "healthcare_report_desc": "Medical-focused summary for healthcare provider consultations",
+      "report_includes": "Report Includes:",
+      "cycle_statistics": "Cycle statistics and patterns",
+      "monthly_calendars": "Monthly calendar views",
+      "symptom_tracking": "Symptom tracking analysis",
+      "lifestyle_insights": "Lifestyle and wellness insights",
+      "recommendations": "Personalized recommendations",
+      "health_indicators": "Health indicators and trends",
+      "privacy_settings": "Privacy Settings",
+      "privacy_description": "Choose what information to share with your partner",
+      "next_period_predictions": "Next Period Predictions",
+      "next_period_desc": "Share predicted period start dates",
+      "ovulation_tracking": "Ovulation Tracking",
+      "ovulation_desc": "Share ovulation dates and fertile window",
+      "lifestyle_data": "Lifestyle Data",
+      "lifestyle_desc": "Share sleep, water intake, and activities",
+      "mood_tracking": "Mood Tracking",
+      "mood_desc": "Share daily mood and emotional state",
+      "symptoms": "Symptoms",
+      "symptoms_desc": "Share period symptoms and severity",
+      "benefits_title": "Benefits of Partner Sharing",
+      "better_support": "Better Support",
+      "better_support_desc": "Your partner can provide emotional support during difficult days",
+      "period_preparation": "Period Preparation",
+      "period_preparation_desc": "Partner gets advance notice to plan dates and activities",
+      "practical_help": "Practical Help",
+      "practical_help_desc": "Partner can help with supplies and comfort items",
+      "health_awareness": "Health Awareness",
+      "health_awareness_desc": "Partner stays informed about your reproductive health",
+      "what_partner_sees": "What Your Partner Sees",
+      "share": "Share",
+      "connected_partner": "Partner Connected",
+      "connected_description": "Your cycle data is being shared with your partner. They can see your next period predictions and other selected information.",
+      "connected_time": "Connected 2 weeks ago",
+      "partner_active": "Partner is actively following your cycle",
+      "settings": "Settings",
+      "disconnect": "Disconnect",
+      "disconnect_title": "Disconnect Partner",
+      "disconnect_message": "Are you sure you want to disconnect from your partner? They will no longer have access to your cycle information.",
+      "share_to_whatsapp": "Share to WhatsApp",
+      "save": "Save",
+      "generating_pdf": "Generating PDF report...",
+      "pdf_generated": "PDF Report Generated",
+      "pdf_success": "Your cycle health report has been generated successfully.",
+      "what_would_you_like": "What would you like to do?",
+      "opening_share": "Opening share options...",
+      "pdf_saved": "PDF saved successfully!",
+      "failed_to_share": "Failed to share PDF",
+      "failed_to_save": "Failed to save PDF",
+      "failed_to_generate": "Failed to generate PDF report"
+    }
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmed - OvuMate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            border: 4px solid white;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .checkmark:after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 3px;
+            width: 12px;
+            height: 20px;
+            border: solid white;
+            border-width: 0 4px 4px 0;
+            transform: rotate(45deg);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease-out 0.2s both;
+        }
+        
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-out 0.4s both;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeIn 0.5s ease-out 0.6s both;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-out 0.8s both;
+        }
+        
+        .info h3 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .info p {
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <div class="checkmark"></div>
+        </div>
+        
+        <h1>Email Confirmed Successfully!</h1>
+        
+        <p>Your email has been verified. You can now log in to OvuMate and start tracking your menstrual cycle.</p>
+        
+        <a href="#" class="button" onclick="openApp()">Open OvuMate App</a>
+        
+        <div class="info">
+            <h3>What's Next?</h3>
+            <p>1. Open the OvuMate app on your phone<br>
+               2. Log in with your email and password<br>
+               3. Start tracking your cycle!</p>
+        </div>
+    </div>
+    
+    <script>
+        function openApp() {
+            // Try to open the app with deep link
+            window.location.href = 'io.supabase.ovumate://login-callback';
+            
+            // If app doesn't open in 2 seconds, show message
+            setTimeout(function() {
+                alert('Please open the OvuMate app manually and log in with your credentials.');
+            }, 2000);
+        }
+        
+        // Auto-redirect to app after 3 seconds
+        setTimeout(function() {
+            openApp();
+        }, 3000);
+    </script>
+</body>
+</html>
