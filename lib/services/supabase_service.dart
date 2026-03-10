@@ -28,9 +28,11 @@ class SupabaseService {
   /// Get user profile
   Future<UserProfile?> getUserProfile(String userId) async {
     try {
+      debugPrint('🔍 Getting user profile for userId: $userId');
+      
       // Check connection first
       if (!await checkConnection()) {
-        debugPrint('Database connection failed - returning null');
+        debugPrint('⚠️ Database connection failed - returning null');
         return null;
       }
 
@@ -40,16 +42,33 @@ class SupabaseService {
           .eq('id', userId)
           .maybeSingle();
 
-      if (response == null) return null;
-      return UserProfile.fromJson(response as Map<String, dynamic>);
-    } catch (e) {
-      debugPrint('Error getting user profile: $e');
-      // Return null instead of rethrowing for better UX
-      if (e.toString().contains('connection') || e.toString().contains('network')) {
-        debugPrint('Network error - returning null');
+      if (response == null) {
+        debugPrint('⚠️ User profile not found for userId: $userId');
         return null;
       }
-      rethrow;
+      
+      debugPrint('✅ User profile found in database');
+      try {
+        final profile = UserProfile.fromJson(response as Map<String, dynamic>);
+        debugPrint('✅ User profile parsed successfully');
+        debugPrint('   Email: ${profile.email}');
+        debugPrint('   Created: ${profile.createdAt}');
+        return profile;
+      } catch (parseError) {
+        debugPrint('❌ Error parsing user profile: $parseError');
+        debugPrint('   Response data: $response');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('❌ Error getting user profile: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+      // Return null instead of rethrowing for better UX
+      if (e.toString().contains('connection') || e.toString().contains('network')) {
+        debugPrint('⚠️ Network error - returning null');
+        return null;
+      }
+      // For other errors, also return null to prevent app crash
+      return null;
     }
   }
 

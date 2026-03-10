@@ -24,6 +24,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   bool _isPeriodDay = false;
   int? _periodFlow;
   CyclePhase _selectedPhase = CyclePhase.unknown;
+  bool _entrySaved = false; // Flag to track if entry was saved and page should close
+  bool _isSaving = false; // Flag to prevent multiple simultaneous saves
+  DateTime? _lastSaveTime; // Track last save time for debouncing
+  bool _okButtonClicked = false; // Flag to track if OK button was clicked
   
   // Symptoms
   final List<String> _selectedSymptoms = [];
@@ -82,7 +86,17 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Add listeners for text field changes to trigger auto-save
+    _notesController.addListener(_autoSave);
+    _medicationNotesController.addListener(_autoSave);
+  }
+
+  @override
   void dispose() {
+    _notesController.removeListener(_autoSave);
+    _medicationNotesController.removeListener(_autoSave);
     _notesController.dispose();
     _medicationNotesController.dispose();
     super.dispose();
@@ -98,12 +112,14 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         _symptomSeverity[symptom] = SymptomSeverity.mild;
       }
     });
+    _autoSave();
   }
 
   void _updateSymptomSeverity(String symptom, SymptomSeverity severity) {
     setState(() {
       _symptomSeverity[symptom] = severity;
     });
+    _autoSave();
   }
 
   void _toggleActivity(String activity) {
@@ -114,10 +130,46 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         _selectedActivities.add(activity);
       }
     });
+    _autoSave();
+  }
+  
+  // Auto-save function that debounces saves to avoid too many save calls
+  void _autoSave() {
+    // Debounce: only save if last save was more than 1 second ago
+    final now = DateTime.now();
+    if (_lastSaveTime != null && now.difference(_lastSaveTime!).inSeconds < 1) {
+      return; // Too soon, skip this save
+    }
+    
+    if (_isSaving) return; // Already saving, skip
+    
+    _lastSaveTime = now;
+    _saveEntry(showSuccessMessage: false); // Auto-save without showing success message
+  }
+  
+  // Method to handle OK button press
+  void _handleOkButtonPress() {
+    debugPrint('✅ OK button pressed - closing page');
+    // Mark that OK button was clicked to prevent auto-close
+    _okButtonClicked = true;
+    
+    if (!mounted) return;
+    
+    // Clear snackbars and close page immediately
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).clearSnackBars();
+    
+    // Close the page directly
+    Navigator.of(context).pop();
   }
 
-  Future<void> _saveEntry() async {
+  Future<void> _saveEntry({bool showSuccessMessage = true}) async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return; // Prevent multiple simultaneous saves
+    
+    setState(() {
+      _isSaving = true;
+    });
     
     try {
       final cycleProvider = Provider.of<CycleProvider>(context, listen: false);
@@ -155,17 +207,66 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       
       final success = await cycleProvider.addCycleEntry(entry);
       
+      setState(() {
+        _isSaving = false;
+      });
+      
       if (success && mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('cycle_tracking.entry.saved_successfully')),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
+        // Hide any existing SnackBars first
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        scaffoldMessenger.hideCurrentSnackBar();
+        
+        // Wait a moment to ensure previous SnackBar is dismissed
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        if (!mounted) return;
+        
+        // Mark entry as saved
+        _entrySaved = true;
+        
+        // Only show success message if explicitly requested (not for auto-save)
+        if (!showSuccessMessage) {
+          return; // Auto-save completed, don't show messages or close page
+        }
+        
+        // Show success message with clickable OK button
+        final snackBar = SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  context.tr('cycle_tracking.entry.saved_successfully'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          duration: const Duration(seconds: 5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 6,
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            backgroundColor: Colors.white.withOpacity(0.2),
+            disabledTextColor: Colors.white70,
+            onPressed: _handleOkButtonPress,
+          ),
+          dismissDirection: DismissDirection.horizontal,
         );
+        
+        scaffoldMessenger.showSnackBar(snackBar);
         
         // Notifications are automatically scheduled when entry is saved
         // Show info about scheduled notifications after a brief delay to ensure calculations are complete
@@ -180,29 +281,107 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 SnackBar(
                   content: Text(
                     '🔔 Notifications scheduled! You\'ll be reminded ${daysUntil >= 3 ? '2 days before and on' : 'on'} your next period date (${DateFormat.yMMMMd().format(nextPeriodDate)}).',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
                   ),
+                  backgroundColor: Colors.blue,
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   duration: const Duration(seconds: 4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 6,
                 ),
               );
             }
           }
         }
         
-        // If this is a period day entry, show notification scheduling option
+        // Close the page automatically after showing success message
+        // If this is a period day entry, show notification scheduling option first
         if (_isPeriodDay) {
+          // Show notification dialog - dialog will handle closing the entry page
           _showNotificationSchedulingDialog(cycleProvider);
+          // Don't close here - let the dialog handle it
         } else {
-          Navigator.pop(context);
+          // Close the page automatically after a brief delay to show success message
+          await Future.delayed(const Duration(milliseconds: 500)); // Brief delay to show success message
+          if (mounted && _entrySaved && !_okButtonClicked) {
+            // Clear any open snackbars before closing the page
+            scaffoldMessenger.hideCurrentSnackBar();
+            scaffoldMessenger.clearSnackBars();
+            // Close the page
+            Navigator.pop(context);
+          }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(cycleProvider.errorMessage ?? context.tr('cycle_tracking.entry.save_failed'))),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    cycleProvider.errorMessage ?? context.tr('cycle_tracking.entry.save_failed'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 6,
+          ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Error: ${e.toString()}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 6,
+          ),
+        );
+      }
     }
   }
 
@@ -248,11 +427,22 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              // Also close the entry page when cancel is pressed
+              if (mounted) {
+                // Clear any open snackbars before closing the page
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                scaffoldMessenger.hideCurrentSnackBar();
+                scaffoldMessenger.clearSnackBars();
+                Navigator.pop(context);
+              }
+            },
             child: Text(context.tr('notifications.schedule.cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
+              // Close the dialog first
               Navigator.pop(context);
               
               // Schedule notifications
@@ -266,11 +456,42 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(context.tr('notifications.schedule.success')),
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.white, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            context.tr('notifications.schedule.success'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    duration: const Duration(seconds: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 6,
                   ),
                 );
-                Navigator.pop(context);
+                // Close the entry page after showing confirmation
+                await Future.delayed(const Duration(milliseconds: 500));
+                if (mounted) {
+                  // Clear any open snackbars before closing the page
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  scaffoldMessenger.hideCurrentSnackBar();
+                  scaffoldMessenger.clearSnackBars();
+                  Navigator.pop(context);
+                }
               }
             },
             child: Text(context.tr('notifications.schedule.confirm')),
@@ -303,8 +524,31 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${context.tr('notifications.schedule.failed')}: ${e.toString()}'),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${context.tr('notifications.schedule.failed')}: ${e.toString()}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 6,
           ),
         );
       }
@@ -325,17 +569,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-        actions: [
-          TextButton(
-            onPressed: _saveEntry,
-            child: Text(
-              context.tr('cycle_tracking.entry.save'),
-              style: const TextStyle(color: Colors.black),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,
@@ -435,6 +668,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                               _periodFlow = null;
                             }
                           });
+                          _autoSave();
                         },
                       ),
                       
@@ -456,6 +690,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                                   setState(() {
                                     _periodFlow = flow;
                                   });
+                                  _autoSave();
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -527,6 +762,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                               setState(() {
                                 _selectedPhase = phase;
                               });
+                              _autoSave();
                             },
                             selectedColor: const Color(Constants.primaryColor).withOpacity(0.2),
                             checkmarkColor: const Color(Constants.primaryColor),
@@ -613,6 +849,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         onChanged: (value) {
                           _sleepHours = double.tryParse(value);
+                          _autoSave();
                         },
                       ),
                       
@@ -627,6 +864,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
                           _waterIntake = int.tryParse(value);
+                          _autoSave();
                         },
                       ),
                       
@@ -648,6 +886,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                           setState(() {
                             _stressLevel = value.round();
                           });
+                          _autoSave();
                         },
                       ),
                       
@@ -671,6 +910,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                               setState(() {
                                 _selectedMood = isSelected ? null : mood;
                               });
+                              _autoSave();
                             },
                             selectedColor: const Color(Constants.primaryColor).withOpacity(0.2),
                             checkmarkColor: const Color(Constants.primaryColor),
@@ -711,6 +951,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                           setState(() {
                             _tookMedication = value;
                           });
+                          _autoSave();
                         },
                       ),
                       
@@ -757,33 +998,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         maxLines: 3,
                       ),
                     ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _saveEntry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(Constants.primaryColor),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 4,
-                  ),
-                  child: Text(
-                    context.tr('cycle_tracking.entry.save_entry'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Poppins',
-                    ),
                   ),
                 ),
               ),

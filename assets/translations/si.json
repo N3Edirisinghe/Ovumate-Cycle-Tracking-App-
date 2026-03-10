@@ -12,7 +12,7 @@
     "ovulation_date": "ඔවුලේෂන් දිනය",
     "next_period": "ඊළඟ ඔසප්",
     "fertility_calendar": "ඔබගේ සරු දින දර්ශනය",
-    "based_on_cycle": "දින ${cycle} චක්‍රය මත පදනම්ව",
+    "based_on_cycle": "දින {cycle} චක්‍රය මත පදනම්ව",
     "fertile_period": "සරු කාලය",
     "best_conceive": "ගර්භනී වීමට හොඳම කාලය",
     "safe_period": "ආරක්ෂිත කාලය",

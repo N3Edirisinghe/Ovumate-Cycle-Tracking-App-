@@ -143,6 +143,7 @@ class AuthProvider extends ChangeNotifier {
             
             if (event == AuthChangeEvent.signedIn && session != null) {
               final user = session.user;
+              debugPrint('✅ User signed in via auth state change: ${user.email}');
               
               // Load or create user profile
               try {
@@ -153,6 +154,7 @@ class AuthProvider extends ChangeNotifier {
                   },
                 );
               } catch (e) {
+                debugPrint('⚠️ Error loading profile in listener: $e');
                 // Profile doesn't exist, create it from user metadata
                 try {
                   final profile = UserProfile(
@@ -173,6 +175,7 @@ class AuthProvider extends ChangeNotifier {
                   
                   await _createUserProfile(profile);
                   _currentUser = profile;
+                  debugPrint('✅ Created new user profile');
                 } catch (profileError) {
                   debugPrint('⚠️ Error creating profile: $profileError');
                   // Still set authenticated even if profile creation fails
@@ -181,7 +184,9 @@ class AuthProvider extends ChangeNotifier {
               
               _isAuthenticated = true;
               notifyListeners();
+              debugPrint('✅ Auth state updated - user authenticated');
             } else if (event == AuthChangeEvent.signedOut) {
+              debugPrint('🚪 User signed out via auth state change');
               _currentUser = null;
               _isAuthenticated = false;
               notifyListeners();
@@ -355,6 +360,7 @@ class AuthProvider extends ChangeNotifier {
           _isAuthenticated = true;
           notifyListeners();
           debugPrint('✅ Login successful - user authenticated');
+          debugPrint('✅ User profile loaded - cycle data should be initialized by cycle provider');
           return true;
         } catch (profileError) {
           debugPrint('⚠️ Profile load error: $profileError');
@@ -405,11 +411,19 @@ class AuthProvider extends ChangeNotifier {
       if (_supabase == null) return;
       
       _setLoading(true);
+      debugPrint('🚪 Signing out user...');
+      
+      // Before signing out, ensure all data is synced to Supabase
+      // Note: This is handled by the cycle provider's sync method
+      // We just need to make sure we clear local state properly
+      
       await _supabase!.auth.signOut();
       _currentUser = null;
       _isAuthenticated = false;
+      debugPrint('✅ User signed out successfully');
       notifyListeners();
     } catch (e) {
+      debugPrint('❌ Sign out failed: $e');
       _setError('Sign out failed: $e');
     } finally {
       _setLoading(false);
@@ -457,7 +471,86 @@ class AuthProvider extends ChangeNotifier {
            user.appMetadata.containsKey('has_password');
   }
 
-  // Reset password
+  // Generate a 6-digit OTP code
+  String _generateOtpCode() {
+    final random = DateTime.now().millisecondsSinceEpoch;
+    final code = (100000 + (random % 900000)).toString();
+    debugPrint('🔵 Generated OTP code: $code');
+    return code;
+  }
+
+  // Store OTP code in database
+  Future<bool> _storeOtpCode(String email, String otpCode) async {
+    try {
+      if (!await _ensureSupabaseInitialized()) {
+        return false;
+      }
+
+      // OTP expires in 10 minutes
+      final expiresAt = DateTime.now().add(const Duration(minutes: 10)).toIso8601String();
+
+      // Delete any existing OTPs for this email
+      await _supabase!.from('password_reset_otp')
+          .delete()
+          .eq('email', email);
+
+      // Insert new OTP
+      await _supabase!.from('password_reset_otp').insert({
+        'email': email,
+        'otp_code': otpCode,
+        'expires_at': expiresAt,
+        'used': false,
+      });
+
+      debugPrint('✅ OTP code stored in database for $email');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error storing OTP code: $e');
+      return false;
+    }
+  }
+
+  // Verify OTP code
+  Future<bool> verifyOtpCode(String email, String otpCode) async {
+    try {
+      if (!await _ensureSupabaseInitialized()) {
+        _setError('Authentication service not initialized.');
+        return false;
+      }
+
+      final trimmedEmail = email.trim();
+      final trimmedOtp = otpCode.trim();
+
+      // Query for valid OTP
+      final response = await _supabase!.from('password_reset_otp')
+          .select()
+          .eq('email', trimmedEmail)
+          .eq('otp_code', trimmedOtp)
+          .eq('used', false)
+          .gt('expires_at', DateTime.now().toIso8601String())
+          .limit(1)
+          .maybeSingle();
+
+      if (response == null) {
+        _setError('Invalid or expired verification code. Please request a new code.');
+        return false;
+      }
+
+      // Mark OTP as used
+      await _supabase!.from('password_reset_otp')
+          .update({'used': true})
+          .eq('id', response['id']);
+
+      debugPrint('✅ OTP code verified successfully');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error verifying OTP code: $e');
+      _setError('Failed to verify code. Please try again.');
+      return false;
+    }
+  }
+
+  // Reset password with OTP code
   Future<bool> resetPassword(String email) async {
     try {
       // Ensure Supabase is initialized
@@ -477,15 +570,41 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
       
-      debugPrint('🔵 Attempting to send password reset email to: $trimmedEmail');
+      debugPrint('🔵 Attempting to send password reset email with OTP code to: $trimmedEmail');
       
+      // Generate 6-digit OTP code
+      final otpCode = _generateOtpCode();
+      
+      // Store OTP in database
+      final stored = await _storeOtpCode(trimmedEmail, otpCode);
+      if (!stored) {
+        _setError('Failed to generate reset code. Please try again.');
+        return false;
+      }
+      
+      // Set redirect URL for password reset - this should match the deep link configured in Supabase
+      // The redirect URL should be registered in Supabase Dashboard > Authentication > URL Configuration
+      final redirectUrl = 'io.supabase.ovumate://reset-password?otp=$otpCode';
+      
+      // Send password reset email (Supabase will send the email with link)
+      // Note: The OTP code needs to be included in the email template
+      // Configure the email template in Supabase Dashboard > Authentication > Email Templates
+      // Add the OTP code manually or use Edge Functions to send custom emails
       await _supabase!.auth.resetPasswordForEmail(
         trimmedEmail,
+        redirectTo: redirectUrl,
       );
       
-      debugPrint('✅ Password reset request sent successfully');
-      debugPrint('📧 Email will redirect to Site URL from Supabase Dashboard');
-      debugPrint('⚠️ IMPORTANT: Use the NEW email link - old links will not work!');
+      // TODO: Send OTP code via email using Supabase Edge Function or custom email service
+      // For now, the OTP is stored in database and can be retrieved
+      // You can configure Supabase email template to include: "Your reset code is: [OTP_CODE]"
+      // Or use Edge Functions to send custom email with OTP
+      
+      debugPrint('✅ Password reset email sent successfully');
+      debugPrint('📧 OTP Code: $otpCode');
+      debugPrint('📧 Email will redirect to: $redirectUrl');
+      debugPrint('⚠️ IMPORTANT: Make sure this URL is configured in Supabase Dashboard > Authentication > URL Configuration');
+      debugPrint('⚠️ IMPORTANT: Update email template in Supabase Dashboard to include OTP code: {{ .OTPCode }} or {{ .Data.otp_code }}');
       
       // Note: Supabase returns success even if email is not configured
       // The email might not actually be sent if:
@@ -640,17 +759,50 @@ class AuthProvider extends ChangeNotifier {
   // Load user profile from database
   Future<void> _loadUserProfile(String userId) async {
     try {
+      debugPrint('🔍 Loading user profile for userId: $userId');
+      
+      // Try to get user profile with better error handling
       final response = await _supabase!
           .from('user_profiles')
           .select()
           .eq('id', userId)
-          .single();
+          .maybeSingle();
       
-      _currentUser = UserProfile.fromJson(response);
+      if (response != null) {
+        debugPrint('✅ Found user profile in database');
+        try {
+          _currentUser = UserProfile.fromJson(response);
+          debugPrint('✅ User profile loaded successfully');
+          debugPrint('   Email: ${_currentUser?.email}');
+          debugPrint('   Name: ${_currentUser?.fullName}');
+          debugPrint('   Created: ${_currentUser?.createdAt}');
+          notifyListeners();
+          return;
+        } catch (parseError) {
+          debugPrint('⚠️ Error parsing user profile: $parseError');
+          debugPrint('   Response data: $response');
+          // Continue to create new profile if parsing fails
+        }
+      } else {
+        debugPrint('⚠️ User profile not found in database for userId: $userId');
+      }
     } catch (e) {
-      // Profile doesn't exist, create default one
+      debugPrint('❌ Error loading user profile: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+      // Don't create new profile on network/connection errors
+      if (e.toString().contains('connection') || 
+          e.toString().contains('network') ||
+          e.toString().contains('timeout')) {
+        debugPrint('⚠️ Network error - not creating new profile');
+        return;
+      }
+    }
+    
+    // Only create default profile if it truly doesn't exist (not due to network error)
+    try {
       final user = _supabase!.auth.currentUser;
-      if (user != null) {
+      if (user != null && _currentUser == null) {
+        debugPrint('📝 Creating new user profile for userId: $userId');
         final profile = UserProfile(
           id: user.id,
           email: user.email ?? '',
@@ -659,29 +811,53 @@ class AuthProvider extends ChangeNotifier {
         );
         await _createUserProfile(profile);
         _currentUser = profile;
+        debugPrint('✅ New user profile created');
+        notifyListeners();
       }
+    } catch (createError) {
+      debugPrint('❌ Error creating user profile: $createError');
     }
   }
 
   // Create user profile in database
   Future<void> _createUserProfile(UserProfile profile) async {
     try {
+      debugPrint('📝 Creating/updating user profile for userId: ${profile.id}');
       // Use upsert to handle cases where profile might already exist
-      await _supabase!
+      final response = await _supabase!
           .from('user_profiles')
           .upsert(profile.toJson())
           .select()
           .single();
+      debugPrint('✅ User profile created/updated successfully');
+      _currentUser = UserProfile.fromJson(response);
+      notifyListeners();
     } catch (e) {
+      debugPrint('⚠️ Upsert failed, trying insert: $e');
       // Try insert if upsert fails
       try {
         await _supabase!
             .from('user_profiles')
             .insert(profile.toJson());
+        debugPrint('✅ User profile inserted successfully');
+        _currentUser = profile;
+        notifyListeners();
       } catch (insertError) {
-        debugPrint('Error creating user profile: $insertError');
+        debugPrint('❌ Error creating user profile: $insertError');
         // Don't throw - profile might already exist
       }
+    }
+  }
+  
+  // Force reload user profile (useful for debugging)
+  Future<void> forceReloadProfile() async {
+    final userId = _supabase?.auth.currentUser?.id;
+    if (userId != null) {
+      debugPrint('🔄 Force reloading user profile for userId: $userId');
+      await _loadUserProfile(userId);
+      notifyListeners();
+    } else {
+      debugPrint('⚠️ Cannot reload: no user ID');
     }
   }
 

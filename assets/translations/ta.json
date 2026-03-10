@@ -12,7 +12,7 @@
     "ovulation_date": "கருமுட்டை உற்பத்தி தேதி",
     "next_period": "அடுத்த மாதவிடாய்",
     "fertility_calendar": "உங்கள் கருவுறுதல் நாட்காட்டி",
-    "based_on_cycle": "${cycle}-நாள் சுழற்சி",
+    "based_on_cycle": "{cycle}-நாள் சுழற்சி",
     "fertile_period": "கருவுறும் காலம்",
     "best_conceive": "கருத்தரிக்க சிறந்த நேரம்",
     "safe_period": "பாதுகாப்பான காலம்",

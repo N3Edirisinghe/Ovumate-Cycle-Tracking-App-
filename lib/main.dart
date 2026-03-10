@@ -53,14 +53,25 @@ void main() async {
       });
     }
     
-    // Ensure prefs is not null
+    // Ensure prefs is not null - try multiple times if needed
     if (prefs == null) {
       try {
         prefs = await SharedPreferences.getInstance();
       } catch (e) {
         debugPrint('⚠️ Failed to get SharedPreferences: $e');
-        // Continue without prefs - app should still work
+        // Try one more time as a last resort
+        try {
+          prefs = await SharedPreferences.getInstance();
+        } catch (e2) {
+          debugPrint('⚠️ Second attempt to get SharedPreferences also failed: $e2');
+          // If we still can't get prefs, we'll handle it in the catch block below
+        }
       }
+    }
+    
+    // If prefs is still null after all attempts, we can't continue
+    if (prefs == null) {
+      throw Exception('Failed to initialize SharedPreferences. The app cannot run without it.');
     }
     
     // Initialize Supabase before running the app with timeout
@@ -83,6 +94,7 @@ void main() async {
     }
     
     // Run app after initialization (even if Supabase failed, UI should still load)
+    // At this point, prefs is guaranteed to be non-null
     runApp(
       EasyLocalization(
         supportedLocales: const [
@@ -92,7 +104,7 @@ void main() async {
         ],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        child: OvuMateApp(prefs: prefs!),
+        child: OvuMateApp(prefs: prefs),
       ),
     );
   } catch (e, stackTrace) {

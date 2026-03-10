@@ -634,7 +634,8 @@ class _OvulationCalculatorScreenState extends State<OvulationCalculatorScreen>
                       ),
                     ),
                     Text(
-                      'ovulation.based_on_cycle'.tr(args: [_cycleLength.toString()]),
+                      'ovulation.based_on_cycle'
+                          .tr(namedArgs: {'cycle': _cycleLength.toString()}),
                       style: TextStyle(
                         color: Colors.white, // More solid white for better visibility
                         fontSize: 14,

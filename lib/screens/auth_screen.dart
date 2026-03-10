@@ -584,12 +584,31 @@ class _LoginFormContentState extends State<_LoginFormContent> {
                 Future.delayed(const Duration(milliseconds: 800), () {
                   if (mounted && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Password reset email sent! Check your email for the verification code.',
+                      SnackBar(
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Password reset email sent!',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Please check your inbox and spam folder. If you don\'t receive it within a few minutes, please check:\n\n'
+                              '1. Check spam/junk folder\n'
+                              '2. Verify your email address is correct\n'
+                              '3. Ensure email service is configured in Supabase Dashboard',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
                         ),
                         backgroundColor: Colors.green,
-                        duration: Duration(seconds: 3),
+                        duration: const Duration(seconds: 8),
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import 'package:ovumate/screens/cycle_tracking_screen.dart';
 import 'package:ovumate/screens/ovulation_calculator_screen.dart';
 import 'package:ovumate/screens/health_ai_screen.dart';
 import 'package:ovumate/screens/wellness_screen.dart';
 import 'package:ovumate/screens/settings_screen.dart';
 import 'package:ovumate/utils/responsive_layout.dart';
+import 'package:ovumate/providers/auth_provider.dart';
+import 'package:ovumate/providers/cycle_provider.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -16,6 +19,79 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  bool _hasInitialized = false;
+  String? _lastUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize cycle data when app starts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+      _listenToAuthChanges();
+    });
+  }
+  
+  void _listenToAuthChanges() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Listen to auth state changes to re-initialize when user logs in/out
+    authProvider.addListener(_onAuthStateChanged);
+  }
+  
+  void _onAuthStateChanged() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.currentUser?.id;
+    
+    // If user ID changed (login or logout), re-initialize
+    if (currentUserId != _lastUserId) {
+      debugPrint('🔄 Auth state changed - re-initializing data');
+      debugPrint('   Previous userId: $_lastUserId');
+      debugPrint('   Current userId: $currentUserId');
+      _lastUserId = currentUserId;
+      _hasInitialized = false; // Reset flag to allow re-initialization
+      _initializeData();
+    }
+  }
+  
+  @override
+  void dispose() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.removeListener(_onAuthStateChanged);
+    super.dispose();
+  }
+
+  Future<void> _initializeData() async {
+    if (_hasInitialized) {
+      debugPrint('⚠️ Already initialized, skipping...');
+      return;
+    }
+    
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final cycleProvider = Provider.of<CycleProvider>(context, listen: false);
+      
+      debugPrint('🔄 Initializing cycle data in MainNavigation...');
+      
+      // Initialize cycle provider if not already initialized
+      if (authProvider.currentUser != null) {
+        final userId = authProvider.currentUser!.id;
+        debugPrint('👤 Initializing with user ID: $userId');
+        await cycleProvider.initialize(userId);
+        _lastUserId = userId;
+      } else {
+        debugPrint('👤 Initializing in guest mode');
+        await cycleProvider.initialize();
+        _lastUserId = null;
+      }
+      
+      _hasInitialized = true;
+      debugPrint('✅ Cycle data initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Error initializing data in MainNavigation: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+    }
+  }
 
   final List<Widget> _screens = [
     const CycleTrackingScreen(),
@@ -27,6 +103,9 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    // Access locale to trigger rebuild when language changes
+    final locale = context.locale;
+    
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

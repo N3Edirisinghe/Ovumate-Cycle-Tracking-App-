@@ -41,11 +41,6 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
             onPressed: _editEntry,
             tooltip: 'Edit Entry',
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: _deleteEntry,
-            tooltip: 'Delete Entry',
-          ),
         ],
       ),
       body: SafeArea(

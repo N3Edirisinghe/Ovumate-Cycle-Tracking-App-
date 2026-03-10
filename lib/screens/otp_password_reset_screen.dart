@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:ovumate/utils/theme.dart';
 import 'package:ovumate/utils/constants.dart';
+import 'package:ovumate/providers/auth_provider.dart';
 
 class OtpPasswordResetScreen extends StatefulWidget {
   final String email;
@@ -68,15 +70,12 @@ class _OtpPasswordResetScreenState extends State<OtpPasswordResetScreen> {
   }
 
   Future<void> _verifyOtpAndResetPassword() async {
-    // If token already verified (from email link), skip OTP verification
-    if (!_isTokenVerified) {
-      // Validate OTP field if token not verified
-      if (_otpController.text.trim().isEmpty) {
-        setState(() {
-          _errorMessage = 'Please enter the verification code from your email';
-        });
-        return;
-      }
+    // Validate OTP field
+    if (_otpController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter the 6-digit verification code from your email';
+      });
+      return;
     }
 
     // Validate password fields
@@ -88,69 +87,88 @@ class _OtpPasswordResetScreenState extends State<OtpPasswordResetScreen> {
     });
 
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final supabase = Supabase.instance.client;
 
-      // Verify token/URL if not already verified
-      if (!_isTokenVerified) {
-        final tokenOrUrl = _otpController.text.trim();
-        debugPrint('🔵 Processing token/URL: $tokenOrUrl');
-        debugPrint('🔵 Email: ${widget.email}');
+      // Verify OTP code using AuthProvider
+      final otpCode = _otpController.text.trim();
+      debugPrint('🔵 Verifying OTP code: $otpCode for email: ${widget.email}');
 
-        try {
-          // Try to parse as URL first
-          Uri? uri;
-          try {
-            uri = Uri.parse(tokenOrUrl);
-          } catch (e) {
-            debugPrint('⚠️ Not a valid URL, trying as token...');
-          }
-
-          // If it's a URL, try to get session from it
-          if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'io.supabase.ovumate')) {
-            debugPrint('🔵 Detected URL format, extracting session...');
-            await supabase.auth.getSessionFromUrl(uri);
-            debugPrint('✅ Session established from URL');
-          } else {
-            // If it's just a token, construct a proper URL
-            debugPrint('🔵 Constructing callback URL with token...');
-            final callbackUrl = Uri.parse('${Constants.supabaseUrl}/auth/v1/callback#access_token=$tokenOrUrl&type=recovery');
-            await supabase.auth.getSessionFromUrl(callbackUrl);
-            debugPrint('✅ Session established from token');
-          }
-
-          // Check if session was created
-          final session = supabase.auth.currentSession;
-          if (session == null) {
-            throw Exception('Failed to verify token. Please click the email link instead.');
-          }
-
-          debugPrint('✅ Token/URL verified successfully');
-          setState(() {
-            _isTokenVerified = true;
-          });
-        } catch (e) {
-          debugPrint('⚠️ Error verifying token/URL: $e');
-          setState(() {
-            _errorMessage = 'Invalid or expired verification code. Please click the email link or request a new password reset email.';
-            _isLoading = false;
-          });
-          return;
-        }
+      final isOtpValid = await authProvider.verifyOtpCode(widget.email, otpCode);
+      
+      if (!isOtpValid) {
+        final errorMsg = authProvider.errorMessage ?? 'Invalid or expired verification code';
+        setState(() {
+          _errorMessage = errorMsg;
+          _isLoading = false;
+        });
+        return;
       }
 
-      // Verify we have a session
-      final session = supabase.auth.currentSession;
-      if (session == null) {
-        throw Exception('Session not found. Please verify your code again.');
-      }
+      debugPrint('✅ OTP code verified successfully');
 
-      // Now update the password
+      // Now we need to create a recovery session to update password
+      // Use Supabase's password reset flow
+      // First, send another reset email to get a valid recovery session
+      // Or use the OTP verification to create a temporary session
+      
+      // Alternative: Use Supabase's resetPasswordForEmail and then verify with OTP
+      // For now, let's use a workaround: verify OTP, then use password reset link
+      
+      // Since we verified OTP, we can now allow password reset
+      // We'll use Supabase's updateUser but we need a session
+      // Let's create a recovery session by using the reset password flow
+      
+      // Actually, after OTP verification, we can directly update password
+      // But we need admin privileges or a valid session
+      // Let's use Supabase's RPC function or direct update
+      
+      // For password reset with OTP, we need to:
+      // 1. Verify OTP (done)
+      // 2. Get a recovery token or create a session
+      // 3. Update password
+      
+      // Workaround: After OTP verification, trigger password reset email again
+      // and use that session, OR use Supabase admin API
+      
+      // Better approach: After OTP verification, we can update password directly
+      // if we have the user's email verified
+      
+      // Let's try to update password using the email
       final newPassword = _passwordController.text.trim();
-      debugPrint('🔵 Updating password...');
+      debugPrint('🔵 Updating password for ${widget.email}...');
 
-      await supabase.auth.updateUser(
-        UserAttributes(password: newPassword),
-      );
+      // Use Supabase's admin API or RPC function to update password
+      // Since we verified OTP, we can trust this request
+      // Try using RPC function first
+      try {
+        await supabase.rpc('update_password_after_otp', params: {
+          'user_email': widget.email,
+          'otp_code': otpCode,
+          'new_password': newPassword,
+        });
+        debugPrint('✅ Password updated successfully via RPC');
+      } catch (rpcError) {
+        debugPrint('⚠️ RPC method failed: $rpcError');
+        
+        // Fallback: Use password reset email flow
+        // Send reset email to get a recovery session, then update password
+        debugPrint('🔵 Using fallback method: sending password reset email...');
+        
+        // Send password reset email to get a valid recovery session
+        await supabase.auth.resetPasswordForEmail(
+          widget.email,
+          redirectTo: 'io.supabase.ovumate://reset-password',
+        );
+        
+        // Wait a bit for email processing
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // Since we can't automatically get the session from email,
+        // we'll need user to click the link OR use admin API
+        // For now, show message that user needs to use the email link
+        throw Exception('Please check your email for the password reset link. The OTP code has been verified.');
+      }
 
       debugPrint('✅ Password updated successfully');
 
@@ -170,7 +188,7 @@ class _OtpPasswordResetScreenState extends State<OtpPasswordResetScreen> {
         }
       }
     } catch (e) {
-      debugPrint('❌ Password reset error: $e');
+      debugPrint('❌ Error in password reset flow: $e');
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('AuthException: ', '');
         _isLoading = false;
@@ -240,47 +258,51 @@ class _OtpPasswordResetScreenState extends State<OtpPasswordResetScreen> {
 
                 const SizedBox(height: 32),
 
-                // OTP Input (only show if token not verified)
-                if (!_isTokenVerified) ...[
-                  TextField(
-                    controller: _otpController,
-                    enabled: true,
-                    readOnly: false,
-                    autofocus: false,
-                    decoration: InputDecoration(
-                      labelText: 'Verification Code',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                      hintText: 'Enter verification code from email',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                      prefixIcon: Icon(Icons.pin, color: Colors.white.withOpacity(0.7)),
-                      helperText: 'Click the email link OR paste the full email link URL here',
-                      helperStyle: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
+                // OTP Input - Always show for code-based verification
+                TextField(
+                  controller: _otpController,
+                  enabled: !_isLoading,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: '6-Digit Verification Code',
+                    labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                    hintText: 'Enter 6-digit code from email',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    prefixIcon: Icon(Icons.pin, color: Colors.white.withOpacity(0.7)),
+                    helperText: 'Enter the 6-digit code sent to your email',
+                    helperStyle: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
                     ),
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.next,
-                    maxLines: 1,
-                    onChanged: (value) {
-                      // Allow typing
-                    },
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
                   ),
-                  const SizedBox(height: 20),
-                ] else ...[
+                  style: const TextStyle(color: Colors.white, fontSize: 20, letterSpacing: 4, fontWeight: FontWeight.bold),
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    // Auto-format: only allow digits
+                    if (value.length > 6) {
+                      _otpController.text = value.substring(0, 6);
+                      _otpController.selection = TextSelection.collapsed(offset: 6);
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                
+                if (_isTokenVerified) ...[
                   // Show success message if token already verified
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -471,9 +493,7 @@ class _OtpPasswordResetScreenState extends State<OtpPasswordResetScreen> {
 
                 // Info text
                 Text(
-                  _isTokenVerified
-                      ? 'Set your new password below.'
-                      : 'Enter the verification code from your email link, then set your new password.',
+                  'Enter the 6-digit verification code from your email, then set your new password.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.7),

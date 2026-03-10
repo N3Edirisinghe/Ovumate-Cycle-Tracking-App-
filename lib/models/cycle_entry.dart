@@ -74,38 +74,81 @@ class CycleEntry {
   });
 
   factory CycleEntry.fromJson(Map<String, dynamic> json) {
+    // Handle both snake_case (from Supabase) and camelCase (from old local storage) formats
+    final userId = json['user_id'] ?? json['userId'] ?? '';
+    final dateStr = json['date'] ?? json['dateString'];
+    final createdAtStr = json['created_at'] ?? json['createdAt'];
+    final updatedAtStr = json['updated_at'] ?? json['updatedAt'];
+    
+    // Parse dates with error handling
+    DateTime? date;
+    try {
+      date = dateStr != null ? DateTime.parse(dateStr.toString()) : DateTime.now();
+    } catch (e) {
+      date = DateTime.now();
+    }
+    
+    DateTime? createdAt;
+    try {
+      createdAt = createdAtStr != null ? DateTime.parse(createdAtStr.toString()) : DateTime.now();
+    } catch (e) {
+      createdAt = DateTime.now();
+    }
+    
+    DateTime? updatedAt;
+    try {
+      updatedAt = updatedAtStr != null ? DateTime.parse(updatedAtStr.toString()) : DateTime.now();
+    } catch (e) {
+      updatedAt = DateTime.now();
+    }
+    
+    // Handle phase - support both string and enum formats
+    CyclePhase phase = CyclePhase.unknown;
+    try {
+      final phaseValue = json['phase'];
+      if (phaseValue != null) {
+        if (phaseValue is String) {
+          phase = CyclePhase.values.firstWhere(
+            (e) => e.toString().split('.').last.toLowerCase() == phaseValue.toLowerCase(),
+            orElse: () => CyclePhase.unknown,
+          );
+        }
+      }
+    } catch (e) {
+      phase = CyclePhase.unknown;
+    }
+    
     return CycleEntry(
-      id: json['id'],
-      userId: json['user_id'],
-      date: DateTime.parse(json['date']),
-      phase: CyclePhase.values.firstWhere(
-        (e) => e.toString().split('.').last == json['phase'],
-        orElse: () => CyclePhase.unknown,
-      ),
-      isPeriodDay: json['is_period_day'] ?? false,
-      periodFlow: json['period_flow'],
+      id: json['id'] ?? '',
+      userId: userId,
+      date: date,
+      phase: phase,
+      isPeriodDay: json['is_period_day'] ?? json['isPeriodDay'] ?? false,
+      periodFlow: json['period_flow'] ?? json['periodFlow'],
       symptoms: List<String>.from(json['symptoms'] ?? []),
       symptomSeverity: Map<String, SymptomSeverity>.from(
-        (json['symptom_severity'] as Map<String, dynamic>?)?.map(
+        (json['symptom_severity'] ?? json['symptomSeverity'] as Map<String, dynamic>?)?.map(
           (key, value) => MapEntry(
             key,
             SymptomSeverity.values.firstWhere(
-              (e) => e.toString().split('.').last == value,
+              (e) => e.toString().split('.').last.toLowerCase() == value.toString().toLowerCase(),
               orElse: () => SymptomSeverity.none,
             ),
           ),
         ) ?? {},
       ),
       notes: json['notes'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      sleepHours: json['sleep_hours'] != null ? (json['sleep_hours'] as num).toDouble() : null,
-      waterIntake: json['water_intake'],
-      stressLevel: json['stress_level'],
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      sleepHours: json['sleep_hours'] != null || json['sleepHours'] != null 
+          ? ((json['sleep_hours'] ?? json['sleepHours']) as num).toDouble() 
+          : null,
+      waterIntake: json['water_intake'] ?? json['waterIntake'],
+      stressLevel: json['stress_level'] ?? json['stressLevel'],
       mood: json['mood'],
       activities: List<String>.from(json['activities'] ?? []),
-      tookMedication: json['took_medication'] ?? false,
-      medicationNotes: json['medication_notes'],
+      tookMedication: json['took_medication'] ?? json['tookMedication'] ?? false,
+      medicationNotes: json['medication_notes'] ?? json['medicationNotes'],
     );
   }
 

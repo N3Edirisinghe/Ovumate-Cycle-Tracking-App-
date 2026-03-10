@@ -121,6 +121,22 @@ document.querySelectorAll('.download-btn').forEach(btn => {
                 
                 console.log('iOS IPA download initiated:', fileName);
             }
+        } else if (btn.classList.contains('windows')) {
+            // Windows download handler
+            const zipUrl = btn.getAttribute('href');
+            const fileName = btn.getAttribute('download') || 'Ovumate-Windows.zip';
+            
+            // Create a temporary anchor element to trigger download
+            const link = document.createElement('a');
+            link.href = zipUrl;
+            link.download = fileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Optional: Track download event
+            console.log('Windows ZIP download initiated:', fileName);
         }
     });
 });

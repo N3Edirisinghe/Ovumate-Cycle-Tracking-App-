@@ -12,7 +12,7 @@
     "ovulation_date": "Ovulation Date",
     "next_period": "Next Period",
     "fertility_calendar": "Your Fertility Calendar",
-    "based_on_cycle": "${cycle}-day cycle",
+    "based_on_cycle": "{cycle}-day cycle",
     "fertile_period": "Fertile Period",
     "best_conceive": "Best time to conceive",
     "safe_period": "Safe Period",

@@ -507,10 +507,18 @@ class PdfReportService {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('• Based on your tracking data, your cycles are ${_getCycleRegularity(cycleProvider)}'),
-              pw.Text('• Your fertility window typically occurs around day ${_getTypicalOvulationDay(cycleLengths)}'),
-              pw.Text('• Period symptoms are most commonly experienced ${_getMostCommonSymptomDays(entries)}'),
-              pw.Text('• Your tracking consistency: ${_getTrackingConsistency(entries)}'),
+              _bullet(
+                'Based on your tracking data, your cycles are ${_getCycleRegularity(cycleProvider)}',
+              ),
+              _bullet(
+                'Your fertility window typically occurs around day ${_getTypicalOvulationDay(cycleLengths)}',
+              ),
+              _bullet(
+                'Period symptoms are most commonly experienced ${_getMostCommonSymptomDays(entries)}',
+              ),
+              _bullet(
+                'Your tracking consistency: ${_getTrackingConsistency(entries)}',
+              ),
             ],
           ),
         ),
@@ -643,11 +651,13 @@ class PdfReportService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('• Total symptom days: ${symptomEntries.length}'),
-            pw.Text('• Symptom-free days: ${entries.length - symptomEntries.length}'),
+            _bullet('Total symptom days: ${symptomEntries.length}'),
+            _bullet('Symptom-free days: ${entries.length - symptomEntries.length}'),
             if (sortedSymptoms.isNotEmpty)
-              pw.Text('• Most frequent symptom: ${sortedSymptoms.first.key}'),
-            pw.Text('• Average symptoms per entry: ${(allSymptoms.values.reduce((a, b) => a + b) / symptomEntries.length).toStringAsFixed(1)}'),
+              _bullet('Most frequent symptom: ${sortedSymptoms.first.key}'),
+            _bullet(
+              'Average symptoms per entry: ${(allSymptoms.values.reduce((a, b) => a + b) / symptomEntries.length).toStringAsFixed(1)}',
+            ),
           ],
         ),
       ],

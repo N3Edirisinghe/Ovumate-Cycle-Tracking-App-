@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:ovumate/utils/theme.dart';
 import 'package:ovumate/utils/responsive_layout.dart';
 import 'package:ovumate/providers/auth_provider.dart';
+import 'package:ovumate/providers/cycle_provider.dart';
 import 'package:ovumate/screens/register_screen.dart';
 import 'package:ovumate/screens/main_navigation.dart';
 import 'package:ovumate/screens/pin_verification_screen.dart';
@@ -130,6 +131,20 @@ class _LoginScreenState extends State<LoginScreen>
           await Future.delayed(const Duration(milliseconds: 500));
           
           if (mounted) {
+            // Initialize cycle data after login to ensure user data is loaded
+            try {
+              final cycleProvider = Provider.of<CycleProvider>(context, listen: false);
+              final userId = authProvider.currentUser?.id;
+              if (userId != null) {
+                debugPrint('🔄 Initializing cycle data after login for userId: $userId');
+                await cycleProvider.initialize(userId);
+                debugPrint('✅ Cycle data initialized after login');
+              }
+            } catch (e) {
+              debugPrint('⚠️ Error initializing cycle data after login: $e');
+              // Continue navigation even if initialization fails
+            }
+            
             // Check if PIN is enabled
             await _checkAndNavigateWithPin(context);
           }

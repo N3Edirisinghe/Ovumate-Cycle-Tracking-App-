@@ -59,18 +59,105 @@ class CycleProvider extends ChangeNotifier {
       
       final effectiveUserId = userId ?? _supabaseService.currentUserId ?? 'guest_user';
       
-      // Try to load from Supabase first (if authenticated)
-      if (_supabaseService.isAuthenticated && userId != null) {
+      // If user is authenticated (not guest), first migrate any local guest data
+      if (_supabaseService.isAuthenticated && effectiveUserId != 'guest_user') {
+        await _migrateLocalGuestEntriesToSupabase(effectiveUserId);
+      }
+      
+      // Always load from local storage first (as backup)
+      await _loadCycleEntriesFromStorage();
+      final localEntries = List<CycleEntry>.from(_cycleEntries);
+      debugPrint('📦 Loaded ${localEntries.length} entries from local storage');
+      if (localEntries.isNotEmpty) {
+        debugPrint('📅 Date range: ${localEntries.last.date} to ${localEntries.first.date}');
+        debugPrint('👤 User IDs in local entries: ${localEntries.map((e) => e.userId).toSet().toList()}');
+      }
+      
+      // Try to load from Supabase if authenticated
+      if (_supabaseService.isAuthenticated && effectiveUserId != 'guest_user') {
         try {
-          await _loadCycleEntriesFromSupabase(userId);
+          final supabaseEntries = await _supabaseService.getCycleEntries(effectiveUserId);
+          debugPrint('☁️ Loaded ${supabaseEntries.length} entries from Supabase');
+          
+          if (supabaseEntries.isNotEmpty) {
+            // Use Supabase data as primary source
+            _cycleEntries = List<CycleEntry>.from(supabaseEntries);
+            
+            // Merge with local entries that might not be in Supabase yet
+            // Include ALL local entries regardless of userId for backward compatibility
+            final supabaseIds = supabaseEntries.map((e) => e.id).toSet();
+            // Get ALL local entries that aren't in Supabase (regardless of userId)
+            final localOnlyEntries = localEntries
+                .where((e) => !supabaseIds.contains(e.id))
+                .toList();
+            
+            debugPrint('🔍 Merge check: ${localEntries.length} local entries, ${supabaseEntries.length} Supabase entries');
+            debugPrint('   Local entries not in Supabase: ${localOnlyEntries.length}');
+            if (localOnlyEntries.isNotEmpty) {
+              debugPrint('   Local entry user IDs: ${localOnlyEntries.map((e) => e.userId).toSet().toList()}');
+            }
+            
+            // Always merge local entries that aren't in Supabase (even if they have different userId)
+            // This ensures old data is never lost
+            if (localOnlyEntries.isNotEmpty) {
+              debugPrint('🔄 Merging ${localOnlyEntries.length} local entries not in Supabase...');
+              // Update userId for old entries to match current user
+              final updatedLocalEntries = localOnlyEntries.map((e) => 
+                e.copyWith(userId: effectiveUserId)
+              ).toList();
+              _cycleEntries.addAll(updatedLocalEntries);
+              debugPrint('✅ After merge: ${_cycleEntries.length} total entries');
+              // Try to sync these to Supabase
+              await syncLocalEntriesToSupabase();
+            } else {
+              debugPrint('✅ All local entries already in Supabase');
+            }
+          } else {
+            // Supabase is empty, use ALL local entries if available (for backward compatibility)
+            if (localEntries.isNotEmpty) {
+              debugPrint('⚠️ Supabase is empty, using all local entries');
+              // Update userId for all local entries to match current user
+              _cycleEntries = localEntries.map((e) => 
+                e.copyWith(userId: effectiveUserId)
+              ).toList();
+              // Try to sync local entries to Supabase
+              await syncLocalEntriesToSupabase();
+            } else {
+              _cycleEntries = [];
+            }
+          }
+          
+          // Save merged data back to local storage
+          await _saveCycleEntriesToStorage();
         } catch (e) {
-          debugPrint('Failed to load from Supabase, falling back to local: $e');
-          await _loadCycleEntriesFromStorage();
+          debugPrint('⚠️ Failed to load from Supabase, using local storage: $e');
+          // Use ALL local entries as fallback (for backward compatibility with old data)
+          debugPrint('📦 Using all ${localEntries.length} local entries as fallback');
+          // Update userId for all local entries to match current user
+          _cycleEntries = localEntries.map((e) => 
+            e.copyWith(userId: effectiveUserId)
+          ).toList();
+          // Try to sync local entries to Supabase if we're authenticated
+          if (_supabaseService.isAuthenticated) {
+            await syncLocalEntriesToSupabase();
+          }
         }
       } else {
-        // Fallback to local storage for guest users
-        await _loadCycleEntriesFromStorage();
+        // Guest mode: use ALL local entries (including old entries with different userIds)
+        // Include ALL entries regardless of userId for maximum backward compatibility
+        _cycleEntries = localEntries.map((e) => 
+          e.userId.isEmpty || (e.userId != 'guest_user' && e.userId != effectiveUserId)
+              ? e.copyWith(userId: 'guest_user')
+              : e
+        ).toList();
+        debugPrint('👤 Guest mode: using ${_cycleEntries.length} local entries (including ALL old entries)');
       }
+      
+      // Sort entries by date (most recent first)
+      _cycleEntries.sort((a, b) => b.date.compareTo(a.date));
+      _filterCurrentMonthEntries();
+      
+      debugPrint('✅ Total entries loaded: ${_cycleEntries.length}');
       
       // Calculate statistics and predictions based on user data
       await _calculateStatistics();
@@ -78,8 +165,32 @@ class CycleProvider extends ChangeNotifier {
       _determineCurrentPhase();
       await _syncNotifications();
     } catch (e) {
-      debugPrint('Error initializing cycle provider: $e');
+      debugPrint('❌ Error initializing cycle provider: $e');
       _setError('Failed to initialize cycle data: $e');
+      // Try to load from local storage as last resort
+      try {
+        await _loadCycleEntriesFromStorage();
+        // Use ALL loaded entries regardless of userId for backward compatibility
+        final effectiveUserId = userId ?? _supabaseService.currentUserId ?? 'guest_user';
+        if (_supabaseService.isAuthenticated && effectiveUserId != 'guest_user') {
+          // Update userId for all entries to match current user
+          _cycleEntries = _cycleEntries.map((e) => 
+            e.copyWith(userId: effectiveUserId)
+          ).toList();
+        } else {
+          // Guest mode: ensure all entries have guest_user as userId
+          _cycleEntries = _cycleEntries.map((e) => 
+            e.userId.isEmpty ? e.copyWith(userId: 'guest_user') : e
+          ).where((e) => 
+            e.userId == 'guest_user' || e.userId == effectiveUserId
+          ).toList();
+        }
+        _filterCurrentMonthEntries();
+        debugPrint('✅ Loaded ${_cycleEntries.length} entries from local storage as fallback');
+      } catch (localError) {
+        debugPrint('❌ Failed to load from local storage: $localError');
+        _cycleEntries = [];
+      }
     } finally {
       _setLoading(false);
     }
@@ -103,18 +214,118 @@ class CycleProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final entriesJson = prefs.getString('cycle_entries');
       
-      if (entriesJson != null) {
-        final List<dynamic> entriesList = json.decode(entriesJson);
-        _cycleEntries = entriesList
-            .map((entry) => CycleEntry.fromJson(entry as Map<String, dynamic>))
-            .toList();
-        
-        _filterCurrentMonthEntries();
+      debugPrint('🔍 Checking local storage for cycle entries...');
+      debugPrint('📄 JSON length: ${entriesJson?.length ?? 0}');
+      
+      if (entriesJson != null && entriesJson.isNotEmpty) {
+        try {
+          final List<dynamic> entriesList = json.decode(entriesJson);
+          debugPrint('📋 Found ${entriesList.length} entries in JSON');
+          
+          final List<CycleEntry> loadedEntries = [];
+          int successCount = 0;
+          int failCount = 0;
+          
+          // Parse each entry individually to avoid losing all entries if one fails
+          for (int i = 0; i < entriesList.length; i++) {
+            try {
+              final entryData = entriesList[i];
+              if (entryData is Map<String, dynamic>) {
+                final entry = CycleEntry.fromJson(entryData);
+                // Only add valid entries (with id and date)
+                if (entry.id.isNotEmpty) {
+                  loadedEntries.add(entry);
+                  successCount++;
+                } else {
+                  debugPrint('⚠️ Entry $i has empty ID, skipping');
+                  failCount++;
+                }
+              } else {
+                debugPrint('⚠️ Entry $i is not a Map, skipping');
+                failCount++;
+              }
+            } catch (e) {
+              debugPrint('⚠️ Failed to parse entry $i: $e');
+              debugPrint('   Entry data: ${entriesList[i]}');
+              failCount++;
+              // Continue with next entry instead of failing completely
+            }
+          }
+          
+          _cycleEntries = loadedEntries;
+          debugPrint('✅ Successfully loaded ${_cycleEntries.length} entries from local storage');
+          debugPrint('   ✅ Parsed: $successCount, ❌ Failed: $failCount');
+          
+          if (_cycleEntries.isNotEmpty) {
+            final sorted = List<CycleEntry>.from(_cycleEntries);
+            sorted.sort((a, b) => a.date.compareTo(b.date));
+            debugPrint('📅 Date range: ${sorted.first.date} to ${sorted.last.date}');
+            debugPrint('👤 User IDs: ${_cycleEntries.map((e) => e.userId).toSet().toList()}');
+          }
+          
+          _filterCurrentMonthEntries();
+        } catch (jsonError) {
+          debugPrint('❌ Failed to decode JSON: $jsonError');
+          debugPrint('   JSON preview: ${entriesJson.substring(0, entriesJson.length > 200 ? 200 : entriesJson.length)}...');
+          _cycleEntries = [];
+        }
+      } else {
+        debugPrint('📦 No cycle entries found in local storage (key: cycle_entries)');
+        // Check for alternative keys
+        final allKeys = prefs.getKeys();
+        debugPrint('🔑 All SharedPreferences keys: ${allKeys.where((k) => k.contains('cycle') || k.contains('entry')).toList()}');
+        _cycleEntries = [];
       }
     } catch (e) {
-      debugPrint('Failed to load cycle entries: $e');
-      _cycleEntries = [];
+      debugPrint('❌ Failed to load cycle entries: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+      // Don't clear entries if we already have some loaded
+      if (_cycleEntries.isEmpty) {
+        _cycleEntries = [];
+      }
       _filterCurrentMonthEntries();
+    }
+  }
+  
+  // Force reload all cycle entries (useful for debugging)
+  Future<void> forceReload() async {
+    debugPrint('🔄 Force reloading cycle entries...');
+    final effectiveUserId = _supabaseService.currentUserId ?? 'guest_user';
+    await initialize(effectiveUserId);
+    notifyListeners();
+  }
+  
+  // Debug method to check what's in storage
+  Future<void> debugStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final entriesJson = prefs.getString('cycle_entries');
+      
+      debugPrint('🔍 DEBUG STORAGE:');
+      debugPrint('   Has cycle_entries key: ${entriesJson != null}');
+      if (entriesJson != null) {
+        debugPrint('   JSON length: ${entriesJson.length}');
+        try {
+          final List<dynamic> entriesList = json.decode(entriesJson);
+          debugPrint('   Total entries in JSON: ${entriesList.length}');
+          if (entriesList.isNotEmpty) {
+            debugPrint('   First entry: ${entriesList.first}');
+            debugPrint('   Last entry: ${entriesList.last}');
+          }
+        } catch (e) {
+          debugPrint('   JSON decode error: $e');
+        }
+      }
+      debugPrint('   Current _cycleEntries count: ${_cycleEntries.length}');
+      if (_cycleEntries.isNotEmpty) {
+        final sorted = List<CycleEntry>.from(_cycleEntries);
+        sorted.sort((a, b) => a.date.compareTo(b.date));
+        debugPrint('   Date range: ${sorted.first.date} to ${sorted.last.date}');
+        debugPrint('   User IDs: ${_cycleEntries.map((e) => e.userId).toSet().toList()}');
+        debugPrint('   Period entries: ${_cycleEntries.where((e) => e.isPeriodDay).length}');
+      }
+    } catch (e) {
+      debugPrint('❌ Debug storage error: $e');
     }
   }
 
@@ -124,8 +335,66 @@ class CycleProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final entriesJson = json.encode(_cycleEntries.map((e) => e.toJson()).toList());
       await prefs.setString('cycle_entries', entriesJson);
+      debugPrint('💾 Saved ${_cycleEntries.length} entries to local storage');
     } catch (e) {
-      debugPrint('Failed to save cycle entries: $e');
+      debugPrint('❌ Failed to save cycle entries: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+    }
+  }
+
+  /// One-time migration: move any locally stored "guest_user" entries to Supabase
+  /// for the currently authenticated user, then clear migrated local data.
+  Future<void> _migrateLocalGuestEntriesToSupabase(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final entriesJson = prefs.getString('cycle_entries');
+      if (entriesJson == null || entriesJson.isEmpty) {
+        return;
+      }
+
+      final List<dynamic> entriesList = json.decode(entriesJson);
+      final List<CycleEntry> allLocalEntries = entriesList
+          .map((entry) => CycleEntry.fromJson(entry as Map<String, dynamic>))
+          .toList();
+
+      final guestEntries =
+          allLocalEntries.where((e) => e.userId == 'guest_user').toList();
+      if (guestEntries.isEmpty) {
+        return;
+      }
+
+      debugPrint(
+          '🔄 Migrating ${guestEntries.length} local guest entries to Supabase for user $userId');
+
+      final now = DateTime.now();
+      for (final entry in guestEntries) {
+        try {
+          final migrated = entry.copyWith(
+            id: const Uuid().v4(),
+            userId: userId,
+            createdAt: now,
+            updatedAt: now,
+          );
+          await _supabaseService.addCycleEntry(migrated);
+        } catch (e) {
+          debugPrint('⚠️ Failed to migrate local entry ${entry.id}: $e');
+        }
+      }
+
+      // Keep only non-guest entries locally (or clear everything if none)
+      final remaining =
+          allLocalEntries.where((e) => e.userId != 'guest_user').toList();
+      if (remaining.isEmpty) {
+        await prefs.remove('cycle_entries');
+      } else {
+        final updatedJson =
+            json.encode(remaining.map((e) => e.toJson()).toList());
+        await prefs.setString('cycle_entries', updatedJson);
+      }
+
+      debugPrint('✅ Guest data migration completed');
+    } catch (e) {
+      debugPrint('⚠️ Error during guest data migration: $e');
     }
   }
 
@@ -135,12 +404,21 @@ class CycleProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
       
+      // Get current authenticated user ID (if logged in)
+      final currentUserId = _supabaseService.currentUserId;
+      final isAuthenticated = _supabaseService.isAuthenticated;
+      
+      // Ensure userId is set correctly: use authenticated user ID if logged in, otherwise use entry's userId
+      final effectiveUserId = isAuthenticated && currentUserId != null 
+          ? currentUserId 
+          : (entry.userId.isNotEmpty ? entry.userId : 'guest_user');
+      
       // Ensure entry has a unique ID and timestamps
       final now = DateTime.now();
       final entryToAdd = entry.id.isEmpty 
         ? CycleEntry(
             id: const Uuid().v4(),
-            userId: entry.userId,
+            userId: effectiveUserId,
             date: entry.date,
             phase: entry.phase,
             isPeriodDay: entry.isPeriodDay,
@@ -159,24 +437,32 @@ class CycleProvider extends ChangeNotifier {
             medicationNotes: entry.medicationNotes,
           )
         : entry.copyWith(
+            userId: effectiveUserId,
             updatedAt: now,
           );
       
-      // Try to save to Supabase first (if authenticated)
-      if (_supabaseService.isAuthenticated && entry.userId != 'guest_user') {
+      // Always save to local storage first (as backup)
+      _cycleEntries.insert(0, entryToAdd);
+      await _saveCycleEntriesToStorage();
+      
+      // Try to save to Supabase if authenticated
+      if (isAuthenticated && currentUserId != null && effectiveUserId != 'guest_user') {
         try {
           final savedEntry = await _supabaseService.addCycleEntry(entryToAdd);
-          _cycleEntries.insert(0, savedEntry);
-          debugPrint('Saved entry to Supabase: ${savedEntry.id}');
+          // Update local entry with server response (in case server modified anything)
+          final index = _cycleEntries.indexWhere((e) => e.id == entryToAdd.id);
+          if (index != -1) {
+            _cycleEntries[index] = savedEntry;
+            await _saveCycleEntriesToStorage();
+          }
+          debugPrint('✅ Saved entry to Supabase: ${savedEntry.id}');
         } catch (e) {
-          debugPrint('Failed to save to Supabase, saving locally: $e');
-          _cycleEntries.insert(0, entryToAdd);
-          await _saveCycleEntriesToStorage();
+          debugPrint('⚠️ Failed to save to Supabase (saved locally): $e');
+          // Entry is already saved locally, so user can continue working
+          // Will be synced on next login/initialization
         }
       } else {
-        // Save to local storage for guest users
-        _cycleEntries.insert(0, entryToAdd);
-        await _saveCycleEntriesToStorage();
+        debugPrint('💾 Saved entry locally (guest mode): ${entryToAdd.id}');
       }
       
       _filterCurrentMonthEntries();
@@ -190,7 +476,7 @@ class CycleProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('Error adding cycle entry: $e');
+      debugPrint('❌ Error adding cycle entry: $e');
       _setError('Failed to add cycle entry: $e');
       return false;
     } finally {
@@ -206,26 +492,41 @@ class CycleProvider extends ChangeNotifier {
       
       final index = _cycleEntries.indexWhere((e) => e.id == entry.id);
       if (index == -1) {
+        debugPrint('⚠️ Entry not found: ${entry.id}');
         return false;
       }
       
-      final updatedEntry = entry.copyWith(updatedAt: DateTime.now());
+      // Get current authenticated user ID (if logged in)
+      final currentUserId = _supabaseService.currentUserId;
+      final isAuthenticated = _supabaseService.isAuthenticated;
       
-      // Try to update in Supabase first (if authenticated)
-      if (_supabaseService.isAuthenticated && entry.userId != 'guest_user') {
+      // Ensure userId is set correctly
+      final effectiveUserId = isAuthenticated && currentUserId != null 
+          ? currentUserId 
+          : (entry.userId.isNotEmpty ? entry.userId : 'guest_user');
+      
+      final updatedEntry = entry.copyWith(
+        userId: effectiveUserId,
+        updatedAt: DateTime.now(),
+      );
+      
+      // Always update locally first (as backup)
+      _cycleEntries[index] = updatedEntry;
+      await _saveCycleEntriesToStorage();
+      
+      // Try to update in Supabase if authenticated
+      if (isAuthenticated && currentUserId != null && effectiveUserId != 'guest_user') {
         try {
           final savedEntry = await _supabaseService.updateCycleEntry(updatedEntry);
           _cycleEntries[index] = savedEntry;
-          debugPrint('Updated entry in Supabase: ${savedEntry.id}');
-        } catch (e) {
-          debugPrint('Failed to update in Supabase, updating locally: $e');
-          _cycleEntries[index] = updatedEntry;
           await _saveCycleEntriesToStorage();
+          debugPrint('✅ Updated entry in Supabase: ${savedEntry.id}');
+        } catch (e) {
+          debugPrint('⚠️ Failed to update in Supabase (updated locally): $e');
+          // Entry is already updated locally, will be synced later
         }
       } else {
-        // Update in local storage for guest users
-        _cycleEntries[index] = updatedEntry;
-        await _saveCycleEntriesToStorage();
+        debugPrint('💾 Updated entry locally (guest mode): ${updatedEntry.id}');
       }
       
       _filterCurrentMonthEntries();
@@ -239,7 +540,7 @@ class CycleProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('Error updating cycle entry: $e');
+      debugPrint('❌ Error updating cycle entry: $e');
       _setError('Failed to update cycle entry: $e');
       return false;
     } finally {
@@ -254,19 +555,26 @@ class CycleProvider extends ChangeNotifier {
       _clearError();
       
       final entry = _cycleEntries.firstWhere((e) => e.id == entryId);
+      final currentUserId = _supabaseService.currentUserId;
+      final isAuthenticated = _supabaseService.isAuthenticated;
       
       // Try to delete from Supabase first (if authenticated)
-      if (_supabaseService.isAuthenticated && entry.userId != 'guest_user') {
+      if (isAuthenticated && currentUserId != null && entry.userId != 'guest_user') {
         try {
           await _supabaseService.deleteCycleEntry(entryId);
-          debugPrint('Deleted entry from Supabase: $entryId');
+          debugPrint('✅ Deleted entry from Supabase: $entryId');
         } catch (e) {
-          debugPrint('Failed to delete from Supabase, deleting locally: $e');
+          debugPrint('⚠️ Failed to delete from Supabase (deleting locally): $e');
+          // Continue to delete locally even if Supabase delete fails
         }
       }
       
+      // Always delete from local storage
       _cycleEntries.removeWhere((entry) => entry.id == entryId);
       _filterCurrentMonthEntries();
+      
+      // Save updated list to local storage
+      await _saveCycleEntriesToStorage();
       
       // Recalculate after deletion
       await _calculateStatistics();
@@ -274,17 +582,73 @@ class CycleProvider extends ChangeNotifier {
       _determineCurrentPhase();
       await _syncNotifications();
       
-      // Save to local storage (for guest users or as backup)
-      await _saveCycleEntriesToStorage();
-      
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('Error deleting cycle entry: $e');
+      debugPrint('❌ Error deleting cycle entry: $e');
       _setError('Failed to delete cycle entry: $e');
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Sync local entries to Supabase (for entries that failed to save previously)
+  /// This should be called when user logs in or connectivity is restored
+  Future<void> syncLocalEntriesToSupabase() async {
+    if (!_supabaseService.isAuthenticated) {
+      debugPrint('⚠️ Cannot sync: user not authenticated');
+      return;
+    }
+    
+    final currentUserId = _supabaseService.currentUserId;
+    if (currentUserId == null) {
+      debugPrint('⚠️ Cannot sync: no user ID');
+      return;
+    }
+    
+    try {
+      debugPrint('🔄 Syncing local entries to Supabase...');
+      
+      // Get all entries from Supabase to check which ones already exist
+      final supabaseEntries = await _supabaseService.getCycleEntries(currentUserId);
+      final supabaseEntryIds = supabaseEntries.map((e) => e.id).toSet();
+      
+      // Find local entries that don't exist in Supabase
+      final entriesToSync = _cycleEntries
+          .where((entry) => 
+              entry.userId == currentUserId && 
+              !supabaseEntryIds.contains(entry.id))
+          .toList();
+      
+      if (entriesToSync.isEmpty) {
+        debugPrint('✅ All entries already synced');
+        return;
+      }
+      
+      debugPrint('📤 Syncing ${entriesToSync.length} entries to Supabase...');
+      
+      int successCount = 0;
+      for (final entry in entriesToSync) {
+        try {
+          // Ensure userId is correct
+          final entryToSync = entry.copyWith(userId: currentUserId);
+          await _supabaseService.addCycleEntry(entryToSync);
+          successCount++;
+        } catch (e) {
+          debugPrint('⚠️ Failed to sync entry ${entry.id}: $e');
+        }
+      }
+      
+      debugPrint('✅ Synced $successCount/${entriesToSync.length} entries to Supabase');
+      
+      // Reload from Supabase to get the latest data
+      if (successCount > 0) {
+        await _loadCycleEntriesFromSupabase(currentUserId);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('❌ Error syncing entries to Supabase: $e');
     }
   }
 

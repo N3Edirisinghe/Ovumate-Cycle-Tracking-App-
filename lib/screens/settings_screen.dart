@@ -51,6 +51,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // If translation returns the key itself or is empty, try to get a fallback
       debugPrint('⚠️ Translation issue for key: $key (value: $value)');
       // Return a fallback based on the key
+      if (key.contains('sign_out_dialog.title')) {
+        return 'Sign Out';
+      }
+      if (key.contains('sign_out_dialog.message')) {
+        return 'Are you sure you want to sign out? Your data will be saved.';
+      }
       if (key.contains('help_and_support_subtitle')) {
         return 'FAQ, tutorials, contact support';
       }
@@ -65,6 +71,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       debugPrint('🔴 Translation error for key: $key => $e');
       // Return fallback text
+      if (key.contains('sign_out_dialog.title')) {
+        return 'Sign Out';
+      }
+      if (key.contains('sign_out_dialog.message')) {
+        return 'Are you sure you want to sign out? Your data will be saved.';
+      }
       if (key.contains('help_and_support_subtitle')) {
         return 'FAQ, tutorials, contact support';
       }
@@ -1032,20 +1044,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showSignOutConfirmation() {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.logout, color: Colors.red),
-            SizedBox(width: 12),
-            Text(_trKey('settings.sign_out_dialog.title')),
-          ],
-        ),
-        content: Text(_trKey('settings.sign_out_dialog.message')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(_trKey('common.cancel')),
+      builder: (dialogContext) {
+        // Get translations with fallbacks
+        final title = _trKey('settings.sign_out_dialog.title');
+        final message = _trKey('settings.sign_out_dialog.message');
+        final cancelText = _trKey('common.cancel');
+        
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red),
+              SizedBox(width: 12),
+              Text(title),
+            ],
           ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(cancelText),
+            ),
           ElevatedButton(
             onPressed: () async {
               // Clear user session data (keep user data for next login)
@@ -1081,10 +1099,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text(_trKey('settings.sign_out')),
+            // Use explicit text so it always shows correctly instead of the raw key
+            child: const Text('Sign Out'),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -1172,11 +1192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 12),
+          // Removed back arrow to keep settings as a root screen
           Expanded(
             child: Text(
               _trKey('settings.title'),
@@ -1553,9 +1569,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const Icon(Icons.logout, size: 20),
             const SizedBox(width: 12),
-            Text(
-              _trKey('settings.sign_out'),
-              style: const TextStyle(
+            const Text(
+              'Sign Out',
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),
