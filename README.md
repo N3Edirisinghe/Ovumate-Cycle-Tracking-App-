@@ -105,13 +105,6 @@ Contributions are welcome! To contribute:
 
 ---
 
-## 👨‍💻 Author
-
-**Nilupul Thisaranga (N3Edirisinghe)**
-- GitHub: [@N3Edirisinghe](https://github.com/N3Edirisinghe)
-- Email: [10nilupulthisaranga@gmail.com](mailto:10nilupulthisaranga@gmail.com)
-
----
 
 ## 📄 License
 
