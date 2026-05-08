@@ -112,4 +112,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-<p align="center">Made with ❤️ for Women's Health.</p>
+<p align="center">Made with 👨‍💻❤️ for Women's Health.</p>
