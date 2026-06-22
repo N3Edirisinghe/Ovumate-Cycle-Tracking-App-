@@ -5,7 +5,6 @@
 </div>
 
 ---
-
 ## 📖 Overview
 
 **Ovumate** is a comprehensive menstrual cycle tracking application built with **Flutter** and powered by **Supabase**. It provides users with a seamless, intuitive, and private way to monitor their cycles, predict future periods, and track wellness metrics over time. The application is designed to be beginner-friendly while functioning completely offline-first with secure cloud synchronization.
