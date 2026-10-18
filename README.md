@@ -31,7 +31,7 @@
 - **UI Components:** Cupertino Icons, Flutter SVG, Lottie, FL Chart
 - **Localization:** Easy Localization
 
----
+----
 
 ## 🚀 Getting Started
 
@@ -69,7 +69,7 @@ Follow these instructions to set up the project on your local machine for develo
    flutter run
    ```
 
----
+----
 
 ## 📂 Project Structure
 
@@ -90,7 +90,7 @@ lib/
 
 We take user privacy seriously. All sensitive health data is anonymized and securely encrypted on the device before cloud synchronization. 
 
----
+----
 
 ## 🤝 Contributing
 
